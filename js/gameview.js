@@ -1,10 +1,10 @@
 // The game screen shared by online games, bot games, spectating and Game Review:
 // player bars + clocks, the locked board, move list / history browsing, review panel, end-of-game card.
-import { Board, sqXY } from "./board.js?v=a08ceb19c1";
-import { Chess } from "./vendor/chess.js?v=a08ceb19c1";
-import { t, fa } from "./i18n.js?v=a08ceb19c1";
-import { esc, fmtClock, h, initials, winPct, evalText, store } from "./util.js?v=a08ceb19c1";
-import { play, playMove, soundOn, setSound } from "./sound.js?v=a08ceb19c1";
+import { Board, sqXY } from "./board.js?v=22a5e8314e";
+import { Chess } from "./vendor/chess.js?v=22a5e8314e";
+import { t, fa } from "./i18n.js?v=22a5e8314e";
+import { esc, fmtClock, h, initials, winPct, evalText, store, titleHtml, tagHtml, showHtml, nameHtml, profileHref } from "./util.js?v=22a5e8314e";
+import { play, playMove, soundOn, setSound } from "./sound.js?v=22a5e8314e";
 
 export const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -135,6 +135,8 @@ export class GameView {
   </aside>
 </section>`;
     this.root.querySelector(".gv").addEventListener("click", (e) => {
+      const pn = e.target.closest(".pbar .pn.link");
+      if (pn) { this.playerCard(pn.closest(".pbar")); return; }
       const b = e.target.closest("[data-a]");
       if (b) this.onNav(b.dataset.a, b);
       const mv = e.target.closest(".mv[data-ply]");
@@ -152,8 +154,65 @@ export class GameView {
     this.ro.disconnect();
     window.removeEventListener("resize", this.fit);
     window.removeEventListener("keydown", this.keys);
+    document.querySelector(".pcard")?.remove();
     this.board.destroy();
     this.root.innerHTML = "";
+  }
+
+  // ───────── chat (a tab next to the moves on computers, a sheet from the bottom on phones) ─────────
+  enableChat(ChatClass, { onSend, canChat }) {
+    if (this.chat) return;
+    const side = this.$(".gv-side");
+    const tabs = h(`<div class="gs-tabs"><button data-gt="moves" class="on">${t("moves_tab")}</button><button data-gt="chat">💬 ${t("chat")} <span class="gc-badge" hidden></span></button></div>`);
+    side.insertBefore(tabs, this.$(".gs-moves"));
+    const box = h(`<div class="gs-chat"><div class="gc-head"><b>💬 ${t("chat")}</b><button class="ib gc-x" aria-label="close">✕</button></div><div class="gc-body"></div></div>`);
+    side.insertBefore(box, this.$(".gs-status"));
+    this.chat = new ChatClass(box.querySelector(".gc-body"), { onSend, canChat });
+    this.unread = 0;
+    tabs.onclick = (e) => { const b = e.target.closest("[data-gt]"); if (b) this.showChat(b.dataset.gt === "chat"); };
+    box.querySelector(".gc-x").onclick = () => this.showChat(false);
+    // phones: a chat button in the top bar (with the unread count)
+    const top = h(`<button class="ib chat-ib" aria-label="${t("chat")}">💬<span class="gc-badge" hidden></span></button>`);
+    this.$(".gv-top").appendChild(top);
+    top.onclick = () => this.showChat(!this.chatOpen);
+  }
+
+  showChat(on) {
+    const gv = this.$(".gv");
+    this.chatOpen = on;
+    gv.classList.toggle("tab-chat", on);
+    gv.classList.toggle("chat-open", on);
+    this.$$(".gs-tabs [data-gt]").forEach((b) => b.classList.toggle("on", (b.dataset.gt === "chat") === on));
+    if (on) { this.unread = 0; this.badge(); setTimeout(() => this.$(".gs-chat input")?.focus({ preventScroll: true }), 60); }
+    if (this.opts.onChatToggle) this.opts.onChatToggle(on);
+  }
+
+  setChat(msgs) {
+    if (!this.chat) return;
+    const n = this.chat.set(msgs || []);
+    if (n && !this.chatOpen) { this.unread += n; this.badge(); play("notify"); }
+  }
+
+  badge() {
+    for (const b of this.$$(".gc-badge")) { b.hidden = !this.unread; b.textContent = this.unread || ""; }
+  }
+
+  $$(s) { return [...this.root.querySelectorAll(s)]; }
+
+  // a small card about a player (tap their name)
+  playerCard(bar) {
+    document.querySelector(".pcard")?.remove();
+    const p = this.players[bar.dataset.color] || {};
+    const href = profileHref(p);
+    const card = h(`<div class="pcard"><div class="pc-top">${nameHtml(p, { tag: false })}</div>
+      ${p.tag ? `<div>${tagHtml(p.tag)}</div>` : ""}${p.show && p.show.length ? `<div class="pc-show">${showHtml(p.show)}</div>` : ""}
+      <div class="pc-r">${t("rating")}: <b>${esc(p.elo || "")}</b></div>
+      ${href ? `<a class="btn sm" href="${href}" target="_blank" rel="noopener">👤 ${t("profile")} ↗</a>` : ""}</div>`);
+    document.body.appendChild(card);
+    const r = bar.getBoundingClientRect();
+    card.style.left = Math.max(8, Math.min(window.innerWidth - card.offsetWidth - 8, r.left + 40)) + "px";
+    card.style.top = (r.top > window.innerHeight / 2 ? r.top - card.offsetHeight - 6 : r.bottom + 6) + "px";
+    setTimeout(() => document.addEventListener("pointerdown", function off(e) { if (!card.contains(e.target)) { card.remove(); document.removeEventListener("pointerdown", off); } }), 0);
   }
 
   // ───────── layout: the board always fills the screen and never moves ─────────
@@ -210,9 +269,10 @@ export class GameView {
       const av = p.bot
         ? `<div class="av bot" style="background:${esc(p.color || "#4a4846")}">${esc(p.initials || initials(p.name))}</div>`
         : `<div class="av ${color}"><span class="pc" data-c="${color}K"></span></div>`;
-      el.innerHTML = `${av}<div class="pinfo"><div class="pn">${p.title ? `<span class="ttl">${esc(p.title)}</span>` : ""}` +
+      const tc = p.title_color || (p.bot ? "#7c2929" : null);
+      el.innerHTML = `${av}<div class="pinfo"><div class="pn${p.pid ? " link" : ""}">${titleHtml(p.title, tc)}` +
         `<span class="nm" dir="auto">${esc(p.name || "")}</span>${p.elo ? `<span class="rt">(${esc(p.elo)})</span>` : ""}` +
-        `${p.flag ? `<span class="flag">${esc(p.flag)}</span>` : ""}</div><div class="caps" dir="ltr"></div></div>` +
+        `${p.flag ? `<span class="flag">${esc(p.flag)}</span>` : ""}${tagHtml(p.tag, "sm")}${showHtml(p.show)}</div><div class="caps" dir="ltr"></div></div>` +
         `<div class="react"></div><div class="clock" dir="ltr" hidden><span></span></div>`;
     }
     this.renderCaps();

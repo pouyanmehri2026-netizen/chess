@@ -1,7 +1,7 @@
 /* Chess — website styles. Dark theme, green board, the board never moves while you play. */
-@font-face { font-family: "Vazirmatn"; src: url("../fonts/vazirmatn-arabic-400.woff2?v=a08ceb19c1") format("woff2"); font-weight: 400; font-display: swap;
+@font-face { font-family: "Vazirmatn"; src: url("../fonts/vazirmatn-arabic-400.woff2?v=22a5e8314e") format("woff2"); font-weight: 400; font-display: swap;
   unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F; }
-@font-face { font-family: "Vazirmatn"; src: url("../fonts/vazirmatn-arabic-700.woff2?v=a08ceb19c1") format("woff2"); font-weight: 700 900; font-display: swap;
+@font-face { font-family: "Vazirmatn"; src: url("../fonts/vazirmatn-arabic-700.woff2?v=22a5e8314e") format("woff2"); font-weight: 700 900; font-display: swap;
   unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F; }
 
 :root {
@@ -312,7 +312,7 @@ html[dir="rtl"] .bubble.on { transform: translateX(50%); }
 .cb-promo { z-index: 20; display: none; }
 .cb-promo.on { display: block; }
 .hl, .dest, .mk { position: absolute; left: 0; top: 0; width: 12.5%; height: 12.5%; }
-.hl.last, .hl.sel { background: rgba(255, 255, 51, .5); }
+.hl.last, .hl.sel { background: var(--last, rgba(255, 255, 51, .5)); }
 .hl.pre { background: rgba(244, 42, 50, .55); }
 .hl.check { background: radial-gradient(ellipse at center, rgba(255, 0, 0, 1) 0%, rgba(231, 0, 0, 1) 25%, rgba(169, 0, 0, 0) 89%, rgba(158, 0, 0, 0) 100%); }
 .hl.hint { box-shadow: inset 0 0 0 4px rgba(72, 193, 249, .95); animation: pulse 1.1s ease-in-out infinite; }

@@ -1,9 +1,10 @@
 // The two menu pages: Play (online matchmaking, friend invites, resume) and Bots (pick an opponent).
-import { t, fa } from "./i18n.js?v=a08ceb19c1";
-import { store, esc, toast, sleep, confirmBox } from "./util.js?v=a08ceb19c1";
-import * as api from "./api.js?v=a08ceb19c1";
-import { loadBots, botName } from "./local.js?v=a08ceb19c1";
-import { play } from "./sound.js?v=a08ceb19c1";
+import { t, fa } from "./i18n.js?v=22a5e8314e";
+import { store, esc, toast, sleep, confirmBox, titleHtml } from "./util.js?v=22a5e8314e";
+import * as api from "./api.js?v=22a5e8314e";
+import { loadBots, botName } from "./local.js?v=22a5e8314e";
+import { play } from "./sound.js?v=22a5e8314e";
+import { loadMe as sessionMe } from "./session.js?v=22a5e8314e";
 
 const ONLINE_TC = [
   ["bullet", ["1+0", "2+1"]], ["blitz", ["3+0", "3+2", "5+0"]], ["rapid", ["10+0", "15+10", "30+0"]],
@@ -11,24 +12,12 @@ const ONLINE_TC = [
 const BOT_TC = ["none", "1+0", "3+2", "5+0", "10+0", "15+10", "30+0"];
 const TC_ICON = { bullet: "💨", blitz: "⚡", rapid: "🕐", classical: "🏛" };
 
-export async function loadMe() {
-  const u = store.get("u");
-  if (!u) return null;
-  try {
-    const me = await api.get("me", { t: u, l: fa() ? "fa" : "en" }, 9000);
-    if (me && !me.error) {
-      store.set("me", { name: me.name, elo: me.elo, puzzle_rating: me.puzzle_rating });
-      store.set("beaten", me.beaten || []);
-      return me;
-    }
-  } catch { /* offline */ }
-  return null;
-}
+export const loadMe = () => sessionMe();
 
 // ───────── Play ─────────
 export function renderPlay(view, nav) {
   let alive = true, searching = false;
-  const u = store.get("u");
+  const u = api.auth();
   let tc = store.get("tc", "5+0");
   const cached = store.get("me");
   view.innerHTML = `<div class="page play-page">
@@ -42,7 +31,7 @@ export function renderPlay(view, nav) {
           <div class="tc-row">${list.map((c) => `<button class="tc${c === tc ? " on" : ""}" data-tc="${c}">${c}</button>`).join("")}</div></div>`).join("")}</div>
         <p class="muted small">ℹ️ ${t("tc_help")}</p>
         <button class="btn primary huge play-btn">${t("play_btn")}</button>
-        <div class="note" ${u ? "hidden" : ""}>${t("need_login")}${api.botLink() ? ` <a href="${api.botLink()}" target="_blank" rel="noopener">${t("open_bale")} ↗</a>` : ""}</div>
+        <div class="note" ${u ? "hidden" : ""}>${t("need_login2")}<div class="note-b"><a class="btn primary" href="#/login?mode=signup">${t("signup")}</a><a class="btn" href="#/login">${t("login")}</a>${api.botLink() ? `<a class="btn ghost" href="${api.botLink()}" target="_blank" rel="noopener">${t("open_bale")} ↗</a>` : ""}</div></div>
         <div class="search" hidden><div class="spin"></div><div><b>${t("searching")}</b><div class="muted small">${t("searching_sub")}</div></div><span class="s-time" dir="ltr">0:00</span><button class="btn ghost s-cancel">${t("cancel")}</button></div>
         <div class="cards">
           <a class="qcard" href="#/bots"><span class="qi">🤖</span><b>${t("quick_bots")}</b><span class="muted">${t("quick_bots_sub")}</span></a>
@@ -67,7 +56,13 @@ export function renderPlay(view, nav) {
   async function refresh() {
     const me = await loadMe();
     if (!alive || !me) return;
-    view.querySelector(".hello").innerHTML = `${esc(t("hello", { name: me.name }))} · ${t("your_rating")}: <b>${me.elo}</b>`;
+    if (me.ban) {
+      view.querySelector(".hello").innerHTML = `<span class="ban-line">⛔ ${esc(t("ban_title"))}</span>`;
+      playBtn.classList.add("dis");
+    } else {
+      const f = me.flair || {};
+      view.querySelector(".hello").innerHTML = `${t("hello", { name: `<a class="me-link" href="#/${me.account ? "u/" + encodeURIComponent(me.account.username) : "p/" + me.pid}">${titleHtml(f.title, f.title_color)}${esc(me.name)}</a>` })} · ${t("your_rating")}: <b>${me.elo}</b>`;
+    }
     const r = view.querySelector(".resume");
     if (me.active) {
       r.hidden = false;
@@ -121,7 +116,7 @@ export function renderPlay(view, nav) {
     try {
       const r = await api.post("invite", { t: u, tc, rated: true });
       if (!r.link) { toast(r.error || t("offline")); return; }
-      const { modal } = await import("./util.js?v=a08ceb19c1");
+      const { modal } = await import("./util.js?v=22a5e8314e");
       modal({ title: t("invite_ready"), body: `<p class="muted small">${t("play_friend_sub")}</p><div class="share"><input readonly value="${esc(r.link)}" dir="ltr"><button class="btn cp">${t("copy")}</button></div>`, buttons: [] });
       document.querySelector(".share .cp").onclick = () => navigator.clipboard?.writeText(r.link).then(() => toast(t("copied")));
     } catch { toast(t("offline")); }
@@ -208,3 +203,4 @@ export async function renderBots(view, nav) {
   });
   return { destroy() {} };
 }
+export const V = "22a5e8314e";  // the site version this file belongs to (main.js reloads the page after an update)

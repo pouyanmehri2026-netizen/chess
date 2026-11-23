@@ -83,6 +83,52 @@ export function timeAgo(ts, fa) {
   return fa ? `${v[0]} ${units[v[1]]} پیش` : `${v[0]}${units[v[1]]} ago`;
 }
 
+// ───────── titles, tags, flair (how a player's name is shown everywhere) ─────────
+function lum(hex) {
+  const n = parseInt(String(hex || "#888888").slice(1), 16);
+  return 0.299 * (n >> 16 & 255) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255);
+}
+const HEX = /^#[0-9a-fA-F]{6}$/;
+const col = (c, d) => (HEX.test(c || "") ? c : d);
+
+export function titleHtml(code, color) {
+  if (!code) return "";
+  const bg = col(color, "#7c2929");
+  return `<span class="ttl" style="background:${bg};color:${lum(bg) > 170 ? "#151515" : "#fff"}">${esc(code)}</span>`;
+}
+
+export function tagHtml(tag, cls = "") {
+  if (!tag || (!tag.emoji && !tag.text)) return "";
+  const c1 = col(tag.color, "#888888"), c2 = col(tag.color2, c1);
+  const fg = (tag.style === "outline") ? c1 : (lum(c1) > 165 ? "#151515" : "#fff");
+  return `<span class="tagp st-${esc(tag.style || "solid")} ${cls}" style="--c1:${c1};--c2:${c2};--fg:${fg}">` +
+    `${tag.emoji ? `<i>${esc(tag.emoji)}</i>` : ""}${tag.text ? `<b dir="auto">${esc(tag.text)}</b>` : ""}</span>`;
+}
+
+export function showHtml(list) {
+  return list && list.length ? `<span class="showc">${list.map((e) => `<i>${esc(e)}</i>`).join("")}</span>` : "";
+}
+
+// "GM  Sara  🇮🇷  [👑 Owner]" — p: {name, title, title_color, tag, flag, show}
+export function nameHtml(p, { tag = true, show = false, flag = true } = {}) {
+  if (!p) return "";
+  return `${titleHtml(p.title, p.title_color)}<span class="nm" dir="auto">${esc(p.name || "")}</span>` +
+    `${flag && p.flag ? `<span class="flag">${esc(p.flag)}</span>` : ""}${tag ? tagHtml(p.tag, "sm") : ""}${show ? showHtml(p.show) : ""}`;
+}
+
+export function profileHref(p) {
+  if (!p) return null;
+  if (p.user || p.username) return `#/u/${encodeURIComponent(p.user || p.username)}`;
+  if (p.pid) return `#/p/${encodeURIComponent(p.pid)}`;
+  return null;
+}
+
+export function dateText(ts, fa) {
+  if (!ts) return "";
+  try { return new Date(ts * 1000).toLocaleDateString(fa ? "fa-IR" : "en-GB", { year: "numeric", month: "short", day: "numeric" }); }
+  catch { return ""; }
+}
+
 // Win chance (0..100) for White from a centipawn score — the same curve the bot uses.
 export function winPct(cp) {
   cp = Math.max(-1500, Math.min(1500, cp));

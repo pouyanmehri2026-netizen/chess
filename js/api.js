@@ -1,7 +1,7 @@
 // Talks to the Chess bot's game server. The website itself can be hosted anywhere (GitHub Pages);
 // the server address comes from the link (?s=…), the last one that worked, or server.json in the repo.
-import { CONFIG } from "../config.js?v=a08ceb19c1";
-import { store } from "./util.js?v=a08ceb19c1";
+import { CONFIG } from "../config.js?v=22a5e8314e";
+import { store } from "./util.js?v=22a5e8314e";
 
 let base = null;
 let connecting = null;
@@ -82,3 +82,10 @@ async function call(method, path, params, body, ms, retry) {
 export const get = (path, params = {}, ms = 15000) => call("GET", path, params, null, ms, true);
 export const post = (path, body = {}, ms = 20000) => call("POST", path, null, body, ms, true);
 export const botLink = () => (CONFIG.bot ? `https://ble.ir/${CONFIG.bot}` : null);
+
+// Who is using the website: a log-in session (account) or the key from a Bale link. Null = a visitor.
+export const auth = () => store.get("sess") || store.get("u") || null;
+export const loggedIn = () => !!store.get("sess");
+// sign up / log in calls (no token yet)
+export const pub = (path, body = {}, ms = 25000) => call("POST", "pub/" + path, null, body, ms, true);
+export const pubGet = (path, params = {}, ms = 15000) => call("GET", "pub/" + path, params, null, ms, true);

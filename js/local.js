@@ -1,12 +1,12 @@
 // Games against the bots. Everything runs in the browser (Stockfish 19 in a Web Worker),
 // so the bots answer instantly and keep working even when the game server is offline.
-import { Chess } from "./vendor/chess.js?v=a08ceb19c1";
-import { GameView, START_FEN } from "./gameview.js?v=a08ceb19c1";
-import { getEngine } from "./engine.js?v=a08ceb19c1";
-import { t, fa } from "./i18n.js?v=a08ceb19c1";
-import { store, toast, confirmBox, initials, sleep, esc } from "./util.js?v=a08ceb19c1";
-import { play } from "./sound.js?v=a08ceb19c1";
-import * as api from "./api.js?v=a08ceb19c1";
+import { Chess } from "./vendor/chess.js?v=22a5e8314e";
+import { GameView, START_FEN } from "./gameview.js?v=22a5e8314e";
+import { getEngine } from "./engine.js?v=22a5e8314e";
+import { t, fa } from "./i18n.js?v=22a5e8314e";
+import { store, toast, confirmBox, initials, sleep, esc } from "./util.js?v=22a5e8314e";
+import { play } from "./sound.js?v=22a5e8314e";
+import * as api from "./api.js?v=22a5e8314e";
 
 // How each bot chooses its moves (levels match the Bale bot: club 1–11, Stockfish 21–28).
 const PLAY = {
@@ -24,7 +24,7 @@ const PLAY = {
 
 let BOTS = null;
 export async function loadBots() {
-  if (!BOTS) BOTS = await (await fetch("data/bots.json?v=a08ceb19c1")).json();
+  if (!BOTS) BOTS = await (await fetch("data/bots.json?v=22a5e8314e")).json();
   return BOTS;
 }
 export function botName(b) { return (b.title ? b.title + " " : "") + (fa() ? b.name_fa : b.name); }
@@ -110,7 +110,9 @@ export class LocalGame {
     });
     const bot = this.bot;
     const players = {};
-    players[me] = { name: myName, elo: store.get("me")?.elo || "", bot: false };
+    const mf = store.get("me")?.flair || {};
+    players[me] = { name: myName, elo: store.get("me")?.elo || "", bot: false, title: mf.title, title_color: mf.title_color,
+      tag: mf.tag, show: mf.showcase || [], flag: mf.flag };
     players[botColor] = { name: botName(bot), elo: bot.elo, bot: true, color: bot.color, initials: bot.initials, title: bot.title };
     this.view.setPlayers(players);
     this.view.setTitle(`<span class="gt-ic">🤖</span>${esc(botName(bot))} <span class="muted">· ${esc(this.tcLabel())}</span>`);
@@ -342,7 +344,7 @@ export class LocalGame {
   }
 
   async report() {
-    const u = store.get("u");
+    const u = api.auth();
     if (!u || this.s.reported) return;
     try {
       const r = await api.post("bot_result", { t: u, level: this.s.level, color: this.s.color, moves: this.s.moves,
@@ -370,3 +372,4 @@ export class LocalGame {
 
   destroy() { this.alive = false; if (this.view) this.view.destroy(); }
 }
+export const V = "22a5e8314e";  // the site version this file belongs to (main.js reloads the page after an update)

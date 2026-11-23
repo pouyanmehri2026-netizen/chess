@@ -1,5 +1,5 @@
 // Board sounds, synthesized with Web Audio (no sound files to download).
-import { store } from "./util.js?v=a08ceb19c1";
+import { store } from "./util.js?v=22a5e8314e";
 
 let ctx = null;
 let enabled = store.get("sound", true);

@@ -1,5 +1,5 @@
 // English / فارسی texts of the website.
-import { store } from "./util.js?v=a08ceb19c1";
+import { store } from "./util.js?v=22a5e8314e";
 
 const T = {
   // navigation
@@ -191,6 +191,89 @@ const THEMES = {
   dovetailMate: ["Dovetail mate", "مات دم‌چلچله"], bodenMate: ["Boden's mate", "مات بودن"], doubleBishopMate: ["Two-bishop mate", "مات دو فیل"],
   killBoxMate: ["Kill box mate", "مات جعبه"], vukovicMate: ["Vuković mate", "مات ووکوویچ"], operaMate: ["Opera mate", "مات اپرا"],
 };
+
+Object.assign(T, {
+  // ── Chess v2: navigation ──
+  chat: ["Chat", "چت"], leaderboard: ["Leaderboard", "برترین‌ها"], profile: ["Profile", "پروفایل"],
+  login: ["Log in", "ورود"], signup: ["Sign up", "ثبت‌نام"], admin: ["Admin", "مدیریت"], settings: ["Settings", "تنظیمات"],
+  logout: ["Log out", "خروج"], me_tab: ["Me", "من"], more: ["More", "بیشتر"],
+  // ── log in / sign up ──
+  login_title: ["Welcome back", "خوش برگشتی"], signup_title: ["Create your account", "حسابت را بساز"],
+  username: ["Username", "نام کاربری"], email: ["E-mail", "ایمیل"], password: ["Password", "رمز عبور"],
+  login_or_email: ["Username or e-mail", "نام کاربری یا ایمیل"], login_btn: ["Log in", "ورود"],
+  signup_btn: ["Create account", "ساخت حساب"], or: ["or", "یا"], with_bale: ["Log in with Bale", "ورود با بله"],
+  with_bale_sub: ["Open the link in Bale and press Start — you'll be logged in here.", "لینک را در بله باز کن و Start بزن — این‌جا وارد می‌شوی."],
+  bale_wait: ["Waiting for you in Bale…", "منتظر تأیید در بله…"], open_in_bale: ["Open Bale", "باز کردن بله"],
+  forgot: ["Forgot password?", "رمز را فراموش کردی؟"], code_login: ["Log in with a code", "ورود با کد"],
+  code_sent: ["We sent a 6-digit code to {to}.", "یک کد ۶ رقمی به {to} فرستادیم."], code_label: ["Code", "کد"],
+  verify_btn: ["Verify", "تأیید"], new_password: ["New password", "رمز جدید"], reset_btn: ["Save password & log in", "ذخیره رمز و ورود"],
+  send_code: ["Send me a code", "برایم کد بفرست"], have_account: ["Already have an account?", "حساب داری؟"],
+  new_here: ["New here?", "تازه آمدی؟"], resend: ["Send again", "ارسال دوباره"], back_link: ["Back", "برگشت"],
+  signup_bale_note: ["You came from Bale — your rating, achievements and games come with you.", "از بله آمدی — امتیاز، دستاوردها و بازی‌هایت همراهت می‌آیند."],
+  mail_off_note: ["E-mail codes aren't switched on yet, so your e-mail isn't checked now — verify it later in Settings.", "ارسال ایمیل هنوز روشن نیست، پس ایمیلت الان بررسی نمی‌شود — بعداً در تنظیمات تأییدش کن."],
+  welcome_user: ["Welcome, {name}!", "خوش اومدی {name}!"], user_hint: ["3–20 letters, numbers or _", "۳ تا ۲۰ حرف، عدد یا _"],
+  pass_hint: ["At least 6 characters", "حداقل ۶ کاراکتر"], email_hint: ["We send your code here", "کد به این ایمیل فرستاده می‌شود"],
+  link_this_bale: ["You opened this page from Bale. Link that Bale account to {name}? (rating, achievements and games are merged)", "این صفحه را از بله باز کردی. آن حساب بله را به {name} وصل کنیم؟ (امتیاز، دستاوردها و بازی‌ها یکی می‌شوند)"],
+  link_yes: ["Link them", "وصل کن"], not_now: ["Not now", "فعلاً نه"], linked_ok: ["Linked ✓", "وصل شد ✓"],
+  // ── settings ──
+  tab_look: ["Board & look", "صفحه و ظاهر"], tab_profile: ["Profile & flex", "پروفایل و فلکس"], tab_account: ["Account", "حساب"],
+  board_design: ["Board design", "طرح صفحه"],
+  board_design_sub: ["Used everywhere: on this website, in your Bale games and on your cards.", "همه‌جا استفاده می‌شود: این سایت، بازی‌هایت در بله و کارت‌هایت."],
+  locked: ["Locked", "قفل"], display_title: ["Title next to your name", "عنوان کنار اسمت"], display_tag: ["Tag", "تگ"],
+  auto_best: ["Auto (best)", "خودکار (بهترین)"], none: ["None", "هیچ"], showcase: ["Showcase", "ویترین"],
+  showcase_sub: ["Pick up to 3 achievements to flex next to your name and on your card.", "تا ۳ دستاورد انتخاب کن تا کنار اسمت و روی کارتت دیده شوند."],
+  bio: ["About you", "درباره تو"], flag: ["Flag", "پرچم"], save: ["Save", "ذخیره"], saved_ok: ["Saved ✓", "ذخیره شد ✓"],
+  change_username: ["Change username", "تغییر نام کاربری"], change_password: ["Change password", "تغییر رمز"],
+  current_password: ["Current password", "رمز فعلی"], email_verified: ["Verified", "تأیید شده"], email_unverified: ["Not verified", "تأیید نشده"],
+  verify_email: ["Verify e-mail", "تأیید ایمیل"], set_email: ["Save e-mail", "ذخیره ایمیل"],
+  bale_linked: ["Linked to Bale ✓", "به بله وصل است ✓"], bale_not_linked: ["Not linked to Bale", "به بله وصل نیست"],
+  link_bale_btn: ["Link my Bale account", "وصل کردن حساب بله"],
+  link_bale_sub: ["Opens the Chess bot in Bale — press Start and both are one player (same rating everywhere).", "ربات شطرنج را در بله باز می‌کند — Start بزن تا هر دو یک بازیکن شوند (امتیاز یکسان همه‌جا)."],
+  logout_all: ["Log out on all other devices", "خروج از بقیه دستگاه‌ها"], not_logged: ["You're not logged in.", "وارد نشده‌ای."],
+  create_or_login: ["Create an account to keep your rating, titles, achievements and board design — on any device.", "یک حساب بساز تا امتیاز، عنوان‌ها، دستاوردها و طرح صفحه‌ات همیشه و روی هر دستگاهی بماند."],
+  guest_bale: ["You're playing as your Bale player ({name}). Create an account to log in from anywhere.", "با بازیکن بله‌ات ({name}) بازی می‌کنی. یک حساب بساز تا از هر جا وارد شوی."],
+  role_owner: ["Owner", "مالک"], role_admin: ["Admin", "مدیر"], role_mod: ["Moderator", "ناظر"],
+  theme_changed: ["Board design changed", "طرح صفحه عوض شد"],
+  // ── profile ──
+  peak: ["Peak", "بیشترین"], record: ["Record", "کارنامه"], win_rate: ["Win rate", "درصد برد"], puzzle_rating: ["Puzzle rating", "امتیاز معما"],
+  ach_score: ["Achievement score", "امتیاز دستاورد"], achievements: ["Achievements", "دستاوردها"], recent_games: ["Recent games", "بازی‌های اخیر"],
+  titles: ["Titles", "عنوان‌ها"], rank_n: ["Rank #{n}", "رتبه {n}"], joined: ["Joined {d}", "عضو از {d}"],
+  share_profile: ["Share", "اشتراک"], flex_bale: ["Flex in Bale", "فلکس در بله"], report: ["Report", "گزارش"],
+  report_cheat: ["Cheating (engine)", "تقلب (موتور شطرنج)"], report_abuse: ["Rude / abusive", "بی‌ادبی / توهین"],
+  report_name: ["Bad name", "اسم نامناسب"], report_other: ["Something else", "چیز دیگر"],
+  report_sent: ["Thanks — the admins will look at it.", "ممنون — مدیرها بررسی می‌کنند."], report_why: ["What's wrong?", "مشکل چیست؟"],
+  closed_fp: ["Account closed for fair-play violations", "حساب به خاطر تقلب بسته شده"], rarest: ["Rarest", "کمیاب‌ترین"],
+  hidden_ach: ["Hidden achievement", "دستاورد مخفی"], rating_history: ["Rating history", "تاریخچه امتیاز"],
+  no_games: ["No games yet", "هنوز بازی‌ای نیست"], res_win: ["Win", "برد"], res_loss: ["Loss", "باخت"], res_draw: ["Draw", "مساوی"],
+  res_aborted: ["Aborted", "لغو"], edit_profile: ["Edit profile", "ویرایش پروفایل"], players_have: ["{p}% of players", "{p}٪ بازیکنان"],
+  bale_player: ["Bale player", "بازیکن بله"], best_streak: ["Best streak", "بهترین رکورد"], tier: ["League", "لیگ"],
+  next_title: ["Next title: {code} at {r}", "عنوان بعدی: {code} در {r}"], all: ["All", "همه"], unlocked: ["Unlocked", "باز شده"],
+  // ── leaderboard ──
+  lb_rating: ["Rating", "امتیاز"], lb_puzzles: ["Puzzles", "معما"], lb_wins: ["Wins", "بردها"], lb_ach: ["Achievements", "دستاوردها"],
+  lb_empty: ["Nobody here yet — play a rated game!", "هنوز کسی نیست — یک بازی رسمی کن!"],
+  // ── chat ──
+  chat_title: ["Community chat", "چت عمومی"], chat_ph: ["Write a message…", "پیامی بنویس…"], chat_send: ["Send", "ارسال"],
+  chat_login: ["Log in to chat", "برای چت وارد شو"], chat_rules: ["Be kind. No links, no insults — moderators can mute you.", "مؤدب باش. لینک و توهین ممنوع — ناظرها می‌توانند ساکتت کنند."],
+  chat_closed: ["The chat is closed right now.", "چت فعلاً بسته است."], moves_tab: ["Moves", "حرکت‌ها"],
+  chat_game_empty: ["Say hi 👋 — a GG at the end is always nice.", "سلام کن 👋 — آخر بازی هم یک GG بگو."],
+  chat_new: ["New message", "پیام جدید"], muted_until: ["You're muted {until}.", "تو {until} ساکت شده‌ای."],
+  // ── bans ──
+  ban_title: ["You are banned", "محروم هستی"], ban_until: ["Until: {until}", "تا: {until}"], ban_reason: ["Reason: {reason}", "دلیل: {reason}"],
+  forever: ["forever", "همیشه"], fair_play: ["fair play (engine use)", "بازی جوانمردانه (استفاده از موتور)"],
+  ban_appeal: ["If you think this is a mistake, message the bot owner in Bale.", "اگر فکر می‌کنی اشتباه شده، به مالک ربات در بله پیام بده."],
+  need_login2: ["Create a free account (or open the site from the Chess bot in Bale) to play rated games online. Bots and puzzles work for everyone.",
+    "یک حساب رایگان بساز (یا سایت را از ربات شطرنج در بله باز کن) تا بازی رسمی آنلاین کنی. ربات‌ها و معماها برای همه باز است."],
+  no_titles_yet: ["No titles yet — reach CM by climbing the rating ladder, or get a special one from the owner.", "هنوز عنوانی نداری — با بالا رفتن امتیاز به CM برس، یا از مالک یک عنوان ویژه بگیر."],
+  no_tags_yet: ["No tags yet — tags are special badges the owner gives out.", "هنوز تگی نداری — تگ‌ها نشان‌های ویژه‌ای هستند که مالک می‌دهد."],
+  no_ach_yet: ["Unlock achievements by playing — then pin your best ones here.", "با بازی کردن دستاورد باز کن — بعد بهترین‌ها را این‌جا بگذار."],
+  showcase_full: ["The showcase holds 3 — remove one first.", "ویترین ۳ جا دارد — اول یکی را بردار."],
+  games_n: ["games", "بازی"],
+  // ── achievements popup ──
+  ach_new: ["Achievement unlocked!", "دستاورد جدید!"], title_new: ["New title!", "عنوان جدید!"],
+  r_common: ["Common", "معمولی"], r_uncommon: ["Uncommon", "کمیاب"], r_rare: ["Rare", "نادر"], r_epic: ["Epic", "حماسی"], r_legendary: ["Legendary", "افسانه‌ای"],
+});
+
+export function extend(obj) { Object.assign(T, obj); }
 
 export let LANG = "fa";
 

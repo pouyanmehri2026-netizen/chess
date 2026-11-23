@@ -1,13 +1,14 @@
 // Online games (play or watch) against people, through the Chess bot's game server,
 // and the Game Review page (server review for saved games, in-browser review for bot games).
-import { Chess } from "./vendor/chess.js?v=a08ceb19c1";
-import { GameView, START_FEN, pieceSan } from "./gameview.js?v=a08ceb19c1";
-import { t, fa } from "./i18n.js?v=a08ceb19c1";
-import { store, toast, confirmBox, sleep, esc } from "./util.js?v=a08ceb19c1";
-import { play } from "./sound.js?v=a08ceb19c1";
-import * as api from "./api.js?v=a08ceb19c1";
-import { reviewGame, openingName } from "./reviewer.js?v=a08ceb19c1";
-import { loadBots, botName } from "./local.js?v=a08ceb19c1";
+import { Chess } from "./vendor/chess.js?v=22a5e8314e";
+import { GameView, START_FEN, pieceSan } from "./gameview.js?v=22a5e8314e";
+import { t, fa } from "./i18n.js?v=22a5e8314e";
+import { store, toast, confirmBox, sleep, esc } from "./util.js?v=22a5e8314e";
+import { play } from "./sound.js?v=22a5e8314e";
+import * as api from "./api.js?v=22a5e8314e";
+import { reviewGame, openingName } from "./reviewer.js?v=22a5e8314e";
+import { loadBots, botName } from "./local.js?v=22a5e8314e";
+import { GameChat } from "./chat.js?v=22a5e8314e";
 
 const CLIENT = store.get("client") || (() => { const c = Math.random().toString(36).slice(2, 12); store.set("client", c); return c; })();
 
@@ -44,7 +45,27 @@ export class OnlineGame {
       onBack: () => this.nav(this.watch ? "#/" : "#/play"),
     });
     this.view.status(`<span class="dots">${fa() ? "در حال اتصال" : "Connecting"}</span>`);
+    // fair play: leaving the tab while it's your move is noted (once per move)
+    this.blurPly = -1;
+    this.onBlur = () => {
+      const st = this.st;
+      if (!st || this.watch || !this.me || st.over || !st.rated || st.turn !== this.me) return;
+      const ply = (st.sans || []).length;
+      if (ply === this.blurPly || (document.visibilityState === "visible" && document.hasFocus())) return;
+      this.blurPly = ply;
+      api.post("blur", { t: this.token }).catch(() => {});
+    };
+    document.addEventListener("visibilitychange", this.onBlur);
+    window.addEventListener("blur", this.onBlur);
     this.loop();
+  }
+
+  async sendChat(text) {
+    try {
+      const r = await api.post("game_chat", { t: this.token, text, l: fa() ? "fa" : "en" });
+      if (r.error) toast(r.error, "bad");
+      if (r.state) this.apply(r.state);
+    } catch { toast(t("reconnecting")); }
   }
 
   async loop() {
@@ -83,7 +104,9 @@ export class OnlineGame {
       const live = this.watch ? `<span class="live-pill">● ${t("live")}</span>` : "";
       this.view.setTitle(`${esc(st.tc || "")}${st.rated ? ` · <span class="muted">${fa() ? "رسمی" : "Rated"}</span>` : ""}`, live);
       if (!st.over && me) play("start");
+      if (st.chat && !st.vs_bot) this.view.enableChat(GameChat, { onSend: (x) => this.sendChat(x), canChat: !!st.can_chat });
     }
+    if (st.chat) this.view.setChat(st.chat);
     this.v = st.v;
     const ucis = st.ucis || [];
     this.view.setHistory(st.fens || [st.fen], st.sans || [], ucis, { sound: true, animate: true });
@@ -248,7 +271,13 @@ export class OnlineGame {
     if (u) this.userMove(pre.from, pre.to, u[4], { drag: false });
   }
 
-  destroy() { this.alive = false; document.querySelector(".emoji-pop")?.remove(); if (this.view) this.view.destroy(); }
+  destroy() {
+    this.alive = false;
+    document.querySelector(".emoji-pop")?.remove();
+    document.removeEventListener("visibilitychange", this.onBlur);
+    window.removeEventListener("blur", this.onBlur);
+    if (this.view) this.view.destroy();
+  }
 }
 
 // ───────── Game Review page ─────────
@@ -372,3 +401,4 @@ export class ReviewPage {
 }
 
 export { pieceSan };
+export const V = "22a5e8314e";  // the site version this file belongs to (main.js reloads the page after an update)
