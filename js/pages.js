@@ -1,10 +1,10 @@
 // The two menu pages: Play (online matchmaking, friend invites, resume) and Bots (pick an opponent).
-import { t, fa } from "./i18n.js?v=e008b815d8";
-import { store, esc, toast, sleep, confirmBox, titleHtml } from "./util.js?v=e008b815d8";
-import * as api from "./api.js?v=e008b815d8";
-import { loadBots, botName } from "./local.js?v=e008b815d8";
-import { play } from "./sound.js?v=e008b815d8";
-import { loadMe as sessionMe } from "./session.js?v=e008b815d8";
+import { t, fa } from "./i18n.js?v=ffe5d1f900";
+import { store, esc, toast, sleep, confirmBox, titleHtml } from "./util.js?v=ffe5d1f900";
+import * as api from "./api.js?v=ffe5d1f900";
+import { loadBots, botName } from "./local.js?v=ffe5d1f900";
+import { play } from "./sound.js?v=ffe5d1f900";
+import { loadMe as sessionMe } from "./session.js?v=ffe5d1f900";
 
 const ONLINE_TC = [
   ["bullet", ["1+0", "2+1"]], ["blitz", ["3+0", "3+2", "5+0"]], ["rapid", ["10+0", "15+10", "30+0"]],
@@ -116,7 +116,7 @@ export function renderPlay(view, nav) {
     try {
       const r = await api.post("invite", { t: u, tc, rated: true });
       if (!r.link) { toast(r.error || t("offline")); return; }
-      const { modal } = await import("./util.js?v=e008b815d8");
+      const { modal } = await import("./util.js?v=ffe5d1f900");
       modal({ title: t("invite_ready"), body: `<p class="muted small">${t("play_friend_sub")}</p><div class="share"><input readonly value="${esc(r.link)}" dir="ltr"><button class="btn cp">${t("copy")}</button></div>`, buttons: [] });
       document.querySelector(".share .cp").onclick = () => navigator.clipboard?.writeText(r.link).then(() => toast(t("copied")));
     } catch { toast(t("offline")); }
@@ -203,4 +203,4 @@ export async function renderBots(view, nav) {
   });
   return { destroy() {} };
 }
-export const V = "e008b815d8";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "ffe5d1f900";  // the site version this file belongs to (main.js reloads the page after an update)

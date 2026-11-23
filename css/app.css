@@ -1,7 +1,7 @@
 /* Chess — website styles. Dark theme, green board, the board never moves while you play. */
-@font-face { font-family: "Vazirmatn"; src: url("../fonts/vazirmatn-arabic-400.woff2?v=e008b815d8") format("woff2"); font-weight: 400; font-display: swap;
+@font-face { font-family: "Vazirmatn"; src: url("../fonts/vazirmatn-arabic-400.woff2?v=ffe5d1f900") format("woff2"); font-weight: 400; font-display: swap;
   unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F; }
-@font-face { font-family: "Vazirmatn"; src: url("../fonts/vazirmatn-arabic-700.woff2?v=e008b815d8") format("woff2"); font-weight: 700 900; font-display: swap;
+@font-face { font-family: "Vazirmatn"; src: url("../fonts/vazirmatn-arabic-700.woff2?v=ffe5d1f900") format("woff2"); font-weight: 700 900; font-display: swap;
   unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F; }
 
 :root {

@@ -1,8 +1,8 @@
 // Who is using the website, their profile, their board design, and pop-ups for new achievements/titles.
-import * as api from "./api.js?v=e008b815d8";
-import { store, esc, h } from "./util.js?v=e008b815d8";
-import { t, fa } from "./i18n.js?v=e008b815d8";
-import { play } from "./sound.js?v=e008b815d8";
+import * as api from "./api.js?v=ffe5d1f900";
+import { store, esc, h } from "./util.js?v=ffe5d1f900";
+import { t, fa } from "./i18n.js?v=ffe5d1f900";
+import { play } from "./sound.js?v=ffe5d1f900";
 
 let me = null;
 const listeners = new Set();

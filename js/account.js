@@ -1,9 +1,9 @@
 // Log in / sign up (e-mail code, password, "log in with Bale", forgot password) and the Settings page
 // (board design, title & tag, showcase, bio, flag, account security, linking Bale).
-import * as api from "./api.js?v=e008b815d8";
-import { t, fa } from "./i18n.js?v=e008b815d8";
-import { store, esc, toast, sleep, titleHtml, tagHtml, nameHtml, confirmBox } from "./util.js?v=e008b815d8";
-import { loadMe, setSession, logout, applyTheme, current } from "./session.js?v=e008b815d8";
+import * as api from "./api.js?v=ffe5d1f900";
+import { t, fa } from "./i18n.js?v=ffe5d1f900";
+import { store, esc, toast, sleep, titleHtml, tagHtml, nameHtml, confirmBox } from "./util.js?v=ffe5d1f900";
+import { loadMe, setSession, logout, applyTheme, current } from "./session.js?v=ffe5d1f900";
 
 const L = () => (fa() ? "fa" : "en");
 const FLAGS = ["", "🇮🇷", "🇦🇫", "🇹🇯", "🇹🇷", "🇮🇶", "🇦🇪", "🇸🇦", "🇦🇿", "🇦🇲", "🇬🇪", "🇷🇺", "🇩🇪", "🇬🇧", "🇫🇷", "🇮🇹",
@@ -12,7 +12,7 @@ const FLAGS = ["", "🇮🇷", "🇦🇫", "🇹🇯", "🇹🇷", "🇮🇶", "
 let themesCache = null;
 export async function loadThemes() {
   if (themesCache) return themesCache;
-  try { themesCache = await (await fetch(`data/themes.json?v=e008b815d8`)).json(); } catch { themesCache = []; }
+  try { themesCache = await (await fetch(`data/themes.json?v=ffe5d1f900`)).json(); } catch { themesCache = []; }
   return themesCache;
 }
 
@@ -131,6 +131,7 @@ export function renderLogin(view, nav, params) {
     const box = document.createElement("div");
     box.innerHTML = `<form class="aform"><h1>🔐 ${t("code_label")}</h1>
       <p class="muted">${esc(t("code_sent", { to: r.to || (r.via === "bale" ? "Bale" : "") }))}</p>
+      ${r.via === "bale" ? "" : `<p class="spam-hint">📥 ${t("code_spam_hint")}</p>`}
       <input class="code-in" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" dir="ltr" placeholder="••••••" required>
       ${withPassword ? field("password", t("new_password"), "password", 'autocomplete="new-password" minlength="6" required') : ""}
       <div class="ferr" hidden></div>
@@ -293,7 +294,7 @@ export async function renderSettings(view, nav, params) {
     body.querySelectorAll("[data-fl]").forEach((b) => b.onclick = () => { flag = b.dataset.fl; body.querySelectorAll("[data-fl]").forEach((x) => x.classList.toggle("on", x === b)); });
     body.querySelector(".save-prof").onclick = async () => { if (await save({ bio: body.querySelector(".bio-in").value, flag })) { me.flag = flag; prev(); } };
     // showcase: the player's achievements
-    import("./profile.js?v=e008b815d8").then(async ({ achList }) => {
+    import("./profile.js?v=ffe5d1f900").then(async ({ achList }) => {
       const all = await achList();
       const have = all.list.filter((x) => (me.ach_codes || []).includes(x.code));
       const grid = body.querySelector(".sc-grid");
@@ -340,7 +341,7 @@ export async function renderSettings(view, nav, params) {
       const r = await api.post("email_start", { t: sess, email: e.target.email.value, l: L() }).catch(() => ({ error: t("offline") }));
       if (r.error) { toast(r.error, r.saved ? "" : "bad"); if (r.saved) { me = await loadMe(); draw(); } return; }
       const slot = body.querySelector(".code-slot");
-      slot.innerHTML = `<form class="inline-f"><p class="muted small">${esc(t("code_sent", { to: r.to }))}</p><input class="code-in sm" inputmode="numeric" maxlength="6" dir="ltr" placeholder="••••••"><button class="btn primary">${t("verify_btn")}</button></form>`;
+      slot.innerHTML = `<form class="inline-f"><p class="muted small">${esc(t("code_sent", { to: r.to }))}</p><p class="spam-hint">📥 ${t("code_spam_hint")}</p><input class="code-in sm" inputmode="numeric" maxlength="6" dir="ltr" placeholder="••••••"><button class="btn primary">${t("verify_btn")}</button></form>`;
       slot.querySelector("form").onsubmit = async (ev) => {
         ev.preventDefault();
         const x = await api.post("email_verify", { t: sess, ticket: r.ticket, code: slot.querySelector("input").value, l: L() }).catch(() => ({ error: t("offline") }));
@@ -378,4 +379,4 @@ const COLORS = { SGM: "#f5b700", GM: "#c0392b", IM: "#d35400", WGM: "#c2185b", F
 export const titleColor = (c) => COLORS[c] || "#7c2929";
 export function bestTitle(codes) { return PRESTIGE.find((c) => (codes || []).includes(c)) || null; }
 export { current };
-export const V = "e008b815d8";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "ffe5d1f900";  // the site version this file belongs to (main.js reloads the page after an update)

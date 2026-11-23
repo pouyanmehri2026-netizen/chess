@@ -1,5 +1,5 @@
 // English / فارسی texts of the website.
-import { store } from "./util.js?v=e008b815d8";
+import { store } from "./util.js?v=ffe5d1f900";
 
 const T = {
   // navigation
@@ -206,6 +206,8 @@ Object.assign(T, {
   bale_wait: ["Waiting for you in Bale…", "منتظر تأیید در بله…"], open_in_bale: ["Open Bale", "باز کردن بله"],
   forgot: ["Forgot password?", "رمز را فراموش کردی؟"], code_login: ["Log in with a code", "ورود با کد"],
   code_sent: ["We sent a 6-digit code to {to}.", "یک کد ۶ رقمی به {to} فرستادیم."], code_label: ["Code", "کد"],
+  code_spam_hint: ["Not in your inbox? Look in Spam (Junk) — and tap “Not spam” so the next codes arrive normally. The e-mail can take a minute.",
+    "در صندوق ورودی نیست؟ پوشه Spam (هرزنامه) را نگاه کن و «Not spam» را بزن تا کدهای بعدی عادی برسند. ممکن است یک دقیقه طول بکشد."],
   verify_btn: ["Verify", "تأیید"], new_password: ["New password", "رمز جدید"], reset_btn: ["Save password & log in", "ذخیره رمز و ورود"],
   send_code: ["Send me a code", "برایم کد بفرست"], have_account: ["Already have an account?", "حساب داری؟"],
   new_here: ["New here?", "تازه آمدی؟"], resend: ["Send again", "ارسال دوباره"], back_link: ["Back", "برگشت"],
