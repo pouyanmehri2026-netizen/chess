@@ -1,6 +1,7 @@
 /* Chess v2 — accounts, titles & tags, profiles, leaderboard, chat, admin panel. */
 
 /* ───────── banner & side menu ───────── */
+.logo sup.v2 { font-size: 11px; font-weight: 900; background: var(--green); color: #fff; border-radius: 4px; padding: 1px 4px; margin-inline-start: -2px; align-self: flex-start; margin-top: 2px; }
 #banner { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: 10px; padding: 9px 14px;
   margin-inline-start: var(--side-w); background: linear-gradient(90deg, #2d4a1b, #3e6625); color: #fff; font-weight: 700; font-size: 14px; }
 #banner .bn-t { flex: 1; }

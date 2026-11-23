@@ -1,9 +1,9 @@
 // The admin panel (#/admin): dashboard, players, titles & tags, fair play, reports, chat, games,
 // broadcast, settings and the log. Only for accounts with a role (owner / admin / mod).
-import * as api from "./api.js?v=22a5e8314e";
-import { t, fa, extend } from "./i18n.js?v=22a5e8314e";
-import { esc, toast, store, modal, confirmBox, titleHtml, tagHtml, nameHtml, timeAgo, dateText, profileHref } from "./util.js?v=22a5e8314e";
-import { loadMe, isStaff } from "./session.js?v=22a5e8314e";
+import * as api from "./api.js?v=e008b815d8";
+import { t, fa, extend } from "./i18n.js?v=e008b815d8";
+import { esc, toast, store, modal, confirmBox, titleHtml, tagHtml, nameHtml, timeAgo, dateText, profileHref } from "./util.js?v=e008b815d8";
+import { loadMe, isStaff } from "./session.js?v=e008b815d8";
 
 extend({
   a_dash: ["Dashboard", "داشبورد"], a_players: ["Players", "بازیکنان"], a_tags: ["Titles & tags", "عنوان و تگ"],
@@ -55,7 +55,7 @@ async function P(path, body = {}) {
   } catch { toast(t("offline"), "bad"); return { error: "offline" }; }
 }
 const pills = (p) => `${p.banned ? `<span class="pill bad">⛔ ${esc(p.ban_reason || "")}</span>` : ""}${p.muted ? `<span class="pill warn">🔇</span>` : ""}` +
-  `${p.trusted ? `<span class="pill ok">✓</span>` : ""}${p.role && p.role !== "user" ? `<span class="role r-${p.role}">${p.role}</span>` : ""}`;
+  `${p.trusted ? `<span class="pill ok">✓</span>` : ""}${p.role && p.role !== "user" ? `<span class="role r-${p.role}">${t("role_" + p.role)}</span>` : ""}`;
 const pname = (p) => nameHtml({ name: p.name, title: p.title, title_color: p.title_color, tag: p.tag });
 
 export async function renderAdmin(view, nav, params) {
@@ -69,7 +69,7 @@ export async function renderAdmin(view, nav, params) {
   let tab = params.tab || store.get("admTab") || "dash";
   const tabs = [["dash", "📊"], ["players", "👥"], ["tags", "🏷️"], ["fair", "⚖️"], ["reports", "⚑"], ["chat", "💬"], ["games", "♟"],
     ...(owner ? [["broadcast", "📣"]] : []), ...(admin ? [["settings", "⚙️"], ["log", "📜"]] : [])];
-  view.innerHTML = `<div class="page adm-page"><div class="adm-head"><h1>🛠 ${t("a_title")}</h1><span class="role r-${me.role}">${esc(me.role)}</span></div>
+  view.innerHTML = `<div class="page adm-page"><div class="adm-head"><h1>🛠 ${t("a_title")}</h1><span class="role r-${me.role}">${t("role_" + me.role)}</span></div>
     <div class="adm-tabs">${tabs.map(([k, i]) => `<button data-t="${k}">${i} <span>${t("a_" + (k === "dash" ? "dash" : k))}</span></button>`).join("")}</div>
     <div class="adm-body"></div></div>`;
   const body = view.querySelector(".adm-body");
@@ -393,4 +393,4 @@ export async function renderAdmin(view, nav, params) {
   go(tab);
   return { destroy() {} };
 }
-export const V = "22a5e8314e";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "e008b815d8";  // the site version this file belongs to (main.js reloads the page after an update)
