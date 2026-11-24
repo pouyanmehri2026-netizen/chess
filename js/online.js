@@ -1,14 +1,14 @@
 // Online games (play or watch) against people, through the Chess bot's game server,
 // and the Game Review page (server review for saved games, in-browser review for bot games).
-import { Chess } from "./vendor/chess.js?v=ffe5d1f900";
-import { GameView, START_FEN, pieceSan } from "./gameview.js?v=ffe5d1f900";
-import { t, fa } from "./i18n.js?v=ffe5d1f900";
-import { store, toast, confirmBox, sleep, esc } from "./util.js?v=ffe5d1f900";
-import { play } from "./sound.js?v=ffe5d1f900";
-import * as api from "./api.js?v=ffe5d1f900";
-import { reviewGame, openingName } from "./reviewer.js?v=ffe5d1f900";
-import { loadBots, botName } from "./local.js?v=ffe5d1f900";
-import { GameChat } from "./chat.js?v=ffe5d1f900";
+import { Chess } from "./vendor/chess.js?v=0a2a0f3abe";
+import { GameView, START_FEN, pieceSan } from "./gameview.js?v=0a2a0f3abe";
+import { t, fa } from "./i18n.js?v=0a2a0f3abe";
+import { store, toast, confirmBox, sleep, esc } from "./util.js?v=0a2a0f3abe";
+import { play } from "./sound.js?v=0a2a0f3abe";
+import * as api from "./api.js?v=0a2a0f3abe";
+import { reviewGame, openingName } from "./reviewer.js?v=0a2a0f3abe";
+import { loadBots, botName } from "./local.js?v=0a2a0f3abe";
+import { GameChat } from "./chat.js?v=0a2a0f3abe";
 
 const CLIENT = store.get("client") || (() => { const c = Math.random().toString(36).slice(2, 12); store.set("client", c); return c; })();
 
@@ -401,4 +401,4 @@ export class ReviewPage {
 }
 
 export { pieceSan };
-export const V = "ffe5d1f900";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "0a2a0f3abe";  // the site version this file belongs to (main.js reloads the page after an update)

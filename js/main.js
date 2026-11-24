@@ -1,12 +1,12 @@
 // Chess — the website: online games, bots, puzzles, accounts, profiles, chat and the admin panel.
-import { setLang, t, LANG, fa } from "./i18n.js?v=ffe5d1f900";
-import { store, toast, esc, titleHtml } from "./util.js?v=ffe5d1f900";
-import * as api from "./api.js?v=ffe5d1f900";
-import { soundOn, setSound } from "./sound.js?v=ffe5d1f900";
-import { loadMe, applyTheme, onMe, isStaff, setSession, banner } from "./session.js?v=ffe5d1f900";
+import { setLang, t, LANG, fa } from "./i18n.js?v=0a2a0f3abe";
+import { store, toast, esc, titleHtml } from "./util.js?v=0a2a0f3abe";
+import * as api from "./api.js?v=0a2a0f3abe";
+import { soundOn, setSound } from "./sound.js?v=0a2a0f3abe";
+import { loadMe, applyTheme, onMe, isStaff, setSession, banner } from "./session.js?v=0a2a0f3abe";
 
 const view = document.getElementById("view");
-const V = "ffe5d1f900";
+const V = "0a2a0f3abe";
 
 // Pages load on demand. If the site was updated since this page opened, the new files don't fit the old
 // ones (two copies of the language and log-in state) — so reload once and everything is the new version.
@@ -127,10 +127,10 @@ async function route() {
   window.scrollTo(0, 0);
   try {
     if (page === "bots") {
-      const { renderBots } = await lazy("./pages.js?v=ffe5d1f900");
+      const { renderBots } = await lazy("./pages.js?v=0a2a0f3abe");
       if (my === routing) current = await renderBots(view, nav);
     } else if (page === "bot") {
-      const { LocalGame } = await lazy("./local.js?v=ffe5d1f900");
+      const { LocalGame } = await lazy("./local.js?v=0a2a0f3abe");
       const saved = store.get("botgame");
       if (params.level && params.new && (!saved || String(saved.id) !== params.new)) {
         const tc = params.tc && params.tc !== "none" ? params.tc.split("+").map(Number) : null;
@@ -138,49 +138,49 @@ async function route() {
       } else if (saved) current = new LocalGame(view, { saved }, nav);
       else nav("#/bots");
     } else if (page === "puzzles" || page === "sprint") {
-      const { Puzzles } = await lazy("./puzzles.js?v=ffe5d1f900");
+      const { Puzzles } = await lazy("./puzzles.js?v=0a2a0f3abe");
       current = new Puzzles(view, nav, page === "sprint" ? "sprint" : "rated");
     } else if (page === "game" && parts[1]) {
-      const { OnlineGame } = await lazy("./online.js?v=ffe5d1f900");
+      const { OnlineGame } = await lazy("./online.js?v=0a2a0f3abe");
       current = new OnlineGame(view, parts[1], nav);
     } else if (page === "watch" && parts[1]) {
-      const { OnlineGame } = await lazy("./online.js?v=ffe5d1f900");
+      const { OnlineGame } = await lazy("./online.js?v=0a2a0f3abe");
       let tok = null;
       try { const r = await api.get("pub/watch", { id: parts[1] }); tok = r.t; if (!tok) toast(r.error || t("game_gone")); } catch { toast(t("offline")); }
       if (my !== routing) return;
       if (tok) current = new OnlineGame(view, tok, nav, { watch: true }); else nav("#/play");
     } else if (page === "review" && parts[1]) {
-      const { ReviewPage } = await lazy("./online.js?v=ffe5d1f900");
+      const { ReviewPage } = await lazy("./online.js?v=0a2a0f3abe");
       current = new ReviewPage(view, parts[1], nav);
     } else if (page === "lreview") {
-      const { ReviewPage } = await lazy("./online.js?v=ffe5d1f900");
+      const { ReviewPage } = await lazy("./online.js?v=0a2a0f3abe");
       const g = store.get("lastLocal");
       if (g && g.moves && g.moves.length) current = new ReviewPage(view, null, nav, { local: g }); else nav("#/bots");
     } else if (page === "login") {
-      const { renderLogin } = await lazy("./account.js?v=ffe5d1f900");
+      const { renderLogin } = await lazy("./account.js?v=0a2a0f3abe");
       if (store.get("sess") && !params.mode) { nav(params.next ? decodeURIComponent(params.next) : "#/settings"); return; }
       current = renderLogin(view, nav, params);
     } else if (page === "settings") {
-      const { renderSettings } = await lazy("./account.js?v=ffe5d1f900");
+      const { renderSettings } = await lazy("./account.js?v=0a2a0f3abe");
       current = await renderSettings(view, nav, params);
     } else if ((page === "u" || page === "p") && parts[1]) {
-      const { renderProfile } = await lazy("./profile.js?v=ffe5d1f900");
+      const { renderProfile } = await lazy("./profile.js?v=0a2a0f3abe");
       current = await renderProfile(view, nav, page === "u" ? { user: decodeURIComponent(parts[1]) } : { pid: parts[1] });
     } else if (page === "me") {
       const link = meLink();
       nav(link || "#/login");
       return;
     } else if (page === "leaderboard") {
-      const { renderLeaderboard } = await lazy("./profile.js?v=ffe5d1f900");
+      const { renderLeaderboard } = await lazy("./profile.js?v=0a2a0f3abe");
       current = await renderLeaderboard(view, nav, params);
     } else if (page === "chat") {
-      const { renderChat } = await lazy("./chat.js?v=ffe5d1f900");
+      const { renderChat } = await lazy("./chat.js?v=0a2a0f3abe");
       current = await renderChat(view, nav);
     } else if (page === "admin") {
-      const { renderAdmin } = await lazy("./admin.js?v=ffe5d1f900");
+      const { renderAdmin } = await lazy("./admin.js?v=0a2a0f3abe");
       current = await renderAdmin(view, nav, params);
     } else {
-      const { renderPlay } = await lazy("./pages.js?v=ffe5d1f900");
+      const { renderPlay } = await lazy("./pages.js?v=0a2a0f3abe");
       current = renderPlay(view, nav);
     }
   } catch (e) {
@@ -191,7 +191,7 @@ async function route() {
 
 // logged in to a website-only account and just came from a Bale link: offer to make them one player
 async function offerLink(key, acc) {
-  const { confirmBox } = await lazy("./util.js?v=ffe5d1f900");
+  const { confirmBox } = await lazy("./util.js?v=0a2a0f3abe");
   if (!(await confirmBox(t("link_this_bale", { name: acc.username }), t("link_yes"), t("not_now")))) return;
   try {
     const r = await api.post("link_key", { t: store.get("sess"), u: key, l: fa() ? "fa" : "en" });

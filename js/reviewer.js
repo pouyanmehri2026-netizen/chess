@@ -1,9 +1,9 @@
 // Game Review computed in the browser (same rules as the bot's server-side review):
 // Book, Best, Brilliant (sound sacrifice), Great (only good move), Excellent, Good,
 // Inaccuracy, Mistake, Miss, Blunder — with accuracy and a "played like" rating.
-import { Chess } from "./vendor/chess.js?v=ffe5d1f900";
-import { getEngine, MATE } from "./engine.js?v=ffe5d1f900";
-import { winPct } from "./util.js?v=ffe5d1f900";
+import { Chess } from "./vendor/chess.js?v=0a2a0f3abe";
+import { getEngine, MATE } from "./engine.js?v=0a2a0f3abe";
+import { winPct } from "./util.js?v=0a2a0f3abe";
 
 const VAL = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
 const CLASSES = ["brilliant", "great", "best", "excellent", "good", "book", "inaccuracy", "mistake", "miss", "blunder"];
@@ -13,7 +13,7 @@ async function loadBook() {
   if (BOOK) return BOOK;
   BOOK = new Set();
   try {
-    const list = await (await fetch("data/openings.json?v=ffe5d1f900")).json();
+    const list = await (await fetch("data/openings.json?v=0a2a0f3abe")).json();
     for (const [moves] of list) {
       if (moves.includes("#")) continue;
       const seq = moves.split(" ");
@@ -25,7 +25,7 @@ async function loadBook() {
 
 let OPENINGS = null;
 export async function openingName(sans, fa) {
-  if (!OPENINGS) { try { OPENINGS = await (await fetch("data/openings.json?v=ffe5d1f900")).json(); } catch { OPENINGS = []; } }
+  if (!OPENINGS) { try { OPENINGS = await (await fetch("data/openings.json?v=0a2a0f3abe")).json(); } catch { OPENINGS = []; } }
   const seq = sans.join(" ");
   let best = null;
   for (const [moves, en, f] of OPENINGS) {

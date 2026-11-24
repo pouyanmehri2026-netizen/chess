@@ -1,9 +1,9 @@
 // Log in / sign up (e-mail code, password, "log in with Bale", forgot password) and the Settings page
 // (board design, title & tag, showcase, bio, flag, account security, linking Bale).
-import * as api from "./api.js?v=ffe5d1f900";
-import { t, fa } from "./i18n.js?v=ffe5d1f900";
-import { store, esc, toast, sleep, titleHtml, tagHtml, nameHtml, confirmBox } from "./util.js?v=ffe5d1f900";
-import { loadMe, setSession, logout, applyTheme, current } from "./session.js?v=ffe5d1f900";
+import * as api from "./api.js?v=0a2a0f3abe";
+import { t, fa } from "./i18n.js?v=0a2a0f3abe";
+import { store, esc, toast, sleep, titleHtml, tagHtml, nameHtml, confirmBox } from "./util.js?v=0a2a0f3abe";
+import { loadMe, setSession, logout, applyTheme, current } from "./session.js?v=0a2a0f3abe";
 
 const L = () => (fa() ? "fa" : "en");
 const FLAGS = ["", "🇮🇷", "🇦🇫", "🇹🇯", "🇹🇷", "🇮🇶", "🇦🇪", "🇸🇦", "🇦🇿", "🇦🇲", "🇬🇪", "🇷🇺", "🇩🇪", "🇬🇧", "🇫🇷", "🇮🇹",
@@ -12,7 +12,7 @@ const FLAGS = ["", "🇮🇷", "🇦🇫", "🇹🇯", "🇹🇷", "🇮🇶", "
 let themesCache = null;
 export async function loadThemes() {
   if (themesCache) return themesCache;
-  try { themesCache = await (await fetch(`data/themes.json?v=ffe5d1f900`)).json(); } catch { themesCache = []; }
+  try { themesCache = await (await fetch(`data/themes.json?v=0a2a0f3abe`)).json(); } catch { themesCache = []; }
   return themesCache;
 }
 
@@ -294,7 +294,7 @@ export async function renderSettings(view, nav, params) {
     body.querySelectorAll("[data-fl]").forEach((b) => b.onclick = () => { flag = b.dataset.fl; body.querySelectorAll("[data-fl]").forEach((x) => x.classList.toggle("on", x === b)); });
     body.querySelector(".save-prof").onclick = async () => { if (await save({ bio: body.querySelector(".bio-in").value, flag })) { me.flag = flag; prev(); } };
     // showcase: the player's achievements
-    import("./profile.js?v=ffe5d1f900").then(async ({ achList }) => {
+    import("./profile.js?v=0a2a0f3abe").then(async ({ achList }) => {
       const all = await achList();
       const have = all.list.filter((x) => (me.ach_codes || []).includes(x.code));
       const grid = body.querySelector(".sc-grid");
@@ -379,4 +379,4 @@ const COLORS = { SGM: "#f5b700", GM: "#c0392b", IM: "#d35400", WGM: "#c2185b", F
 export const titleColor = (c) => COLORS[c] || "#7c2929";
 export function bestTitle(codes) { return PRESTIGE.find((c) => (codes || []).includes(c)) || null; }
 export { current };
-export const V = "ffe5d1f900";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "0a2a0f3abe";  // the site version this file belongs to (main.js reloads the page after an update)

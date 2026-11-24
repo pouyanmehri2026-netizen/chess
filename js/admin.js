@@ -1,9 +1,9 @@
 // The admin panel (#/admin): dashboard, players, titles & tags, fair play, reports, chat, games,
 // broadcast, settings and the log. Only for accounts with a role (owner / admin / mod).
-import * as api from "./api.js?v=ffe5d1f900";
-import { t, fa, extend } from "./i18n.js?v=ffe5d1f900";
-import { esc, toast, store, modal, confirmBox, titleHtml, tagHtml, nameHtml, timeAgo, dateText, profileHref } from "./util.js?v=ffe5d1f900";
-import { loadMe, isStaff } from "./session.js?v=ffe5d1f900";
+import * as api from "./api.js?v=0a2a0f3abe";
+import { t, fa, extend } from "./i18n.js?v=0a2a0f3abe";
+import { esc, toast, store, modal, confirmBox, titleHtml, tagHtml, nameHtml, timeAgo, dateText, profileHref } from "./util.js?v=0a2a0f3abe";
+import { loadMe, isStaff } from "./session.js?v=0a2a0f3abe";
 
 extend({
   a_dash: ["Dashboard", "داشبورد"], a_players: ["Players", "بازیکنان"], a_tags: ["Titles & tags", "عنوان و تگ"],
@@ -393,4 +393,4 @@ export async function renderAdmin(view, nav, params) {
   go(tab);
   return { destroy() {} };
 }
-export const V = "ffe5d1f900";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "0a2a0f3abe";  // the site version this file belongs to (main.js reloads the page after an update)
