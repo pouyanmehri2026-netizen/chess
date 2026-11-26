@@ -1,6 +1,6 @@
 // Chess v2.2 texts (English / فارسی): game modes, Mode Creator, Position Editor, lobby, custom & AI bots,
 // exotic badges, board designer, admin events. Pages add their own with extend() too.
-import { extend } from "./i18n.js?v=86ba0a930a";
+import { extend } from "./i18n.js?v=5bdc901d4f";
 
 extend({
   // navigation
@@ -29,8 +29,8 @@ extend({
   join_login: ["Log in or sign up to accept.", "برای قبول کردن وارد شو یا ثبت‌نام کن."],
   // bots page
   my_bots: ["Bot Creator's bots", "ربات‌های ساخته‌شده"], ai_bots: ["AI models", "مدل‌های هوش مصنوعی"],
-  ai_bot_note: ["An AI chat model. It may play ANY move — even illegal ones (a piece from nowhere, taking its own pieces…). You play by the rules. Talk to it in the chat!",
-    "یک مدل چت هوش مصنوعی. ممکن است هر حرکتی بزند — حتی غیرقانونی (مهره از هیچ، زدن مهره خودش…). تو با قوانین بازی می‌کنی. در چت با آن حرف بزن!"],
+  ai_bot_note: ["An AI chat model. It only answers with its move — and it may play ANY move, even illegal ones (a piece from nowhere, taking its own pieces…). You play by the rules.",
+    "یک مدل چت هوش مصنوعی. فقط حرکتش را می‌گوید — و ممکن است هر حرکتی بزند، حتی غیرقانونی (مهره از هیچ، زدن مهره خودش…). تو با قوانین بازی می‌کنی."],
   ai_legal_note: ["An AI chat model that must play legal moves.", "یک مدل هوش مصنوعی که باید حرکت قانونی بزند."],
   inf_rating: ["Infinite rating", "امتیاز بی‌نهایت"], play_from: ["Start position", "وضعیت شروع"],
   normal_start: ["Normal start", "شروع معمولی"], server_game: ["Plays on the game server", "روی سرور بازی اجرا می‌شود"],
@@ -40,7 +40,7 @@ extend({
   dots_style: ["Move dots", "نقطه‌های حرکت"], dots_sub: ["How the squares you can move to are shown.", "خانه‌هایی که می‌توانی بروی چطور نشان داده شوند."],
   dots_bold: ["Bold (always visible)", "پررنگ (همیشه پیدا)"], dots_ring: ["Ring", "حلقه"], dots_glow: ["Glow", "درخشان"],
   dots_classic: ["Classic (faint)", "کلاسیک (کم‌رنگ)"], dots_big: ["Big", "بزرگ"],
-  fx_toggle: ["Event effects (confetti, snow…)", "افکت رویدادها (کاغذرنگی، برف…)"],
+  fx_toggle: ["Animations & effects (moving pieces, glowing boards, event confetti…)", "انیمیشن و افکت‌ها (حرکت مهره‌ها، درخشش صفحه، کاغذرنگی رویدادها…)"],
   secret_board: ["Secret board", "صفحه مخفی"], new_tag: ["NEW", "جدید"], custom_board: ["Special", "ویژه"],
   // profile
   badges: ["Badges", "نشان‌ها"], vs_bots: ["vs bots", "مقابل ربات‌ها"], vs_ai: ["vs AI", "مقابل هوش مصنوعی"],
@@ -53,4 +53,4 @@ extend({
   ev_badge: ["Badge for showing up", "نشان برای حضور"], ev_mode: ["Featured mode", "حالت ویژه"],
 });
 
-export const V = "86ba0a930a";
+export const V = "5bdc901d4f";

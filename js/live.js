@@ -1,9 +1,9 @@
 // Live things on every page: the owner's event ("admin abuse") banner with its countdown and effects
 // (confetti, snow, fireworks…), the Board Designer's newest boards, and the move-dot style.
-import * as api from "./api.js?v=86ba0a930a";
-import { t, fa } from "./i18n.js?v=86ba0a930a";
-import "./i18n3.js?v=86ba0a930a";
-import { store, esc, sleep } from "./util.js?v=86ba0a930a";
+import * as api from "./api.js?v=5bdc901d4f";
+import { t, fa } from "./i18n.js?v=5bdc901d4f";
+import "./i18n3.js?v=5bdc901d4f";
+import { store, esc, sleep } from "./util.js?v=5bdc901d4f";
 
 // ───────── move dots (always visible on every board) ─────────
 export const DOTS = ["bold", "ring", "glow", "big", "classic"];
@@ -34,12 +34,15 @@ const listeners = new Set();
 export const currentEvent = () => ev;
 export function onEvent(fn) { listeners.add(fn); return () => listeners.delete(fn); }
 export const fxOn = () => store.get("fx") !== false && !matchMedia("(prefers-reduced-motion: reduce)").matches;
-export function setFx(on) { store.set("fx", !!on); startFx(); }
+// "calm" = no piece/board animations (Settings → Animations & effects off)
+const calm = () => document.documentElement.classList.toggle("calm", store.get("fx") === false);
+export function setFx(on) { store.set("fx", !!on); calm(); startFx(); }
 
 export function startLive() {
   if (started) return;
   started = true;
   applyDots();
+  calm();
   loop();
   setInterval(tick, 1000);
   window.addEventListener("hashchange", () => setTimeout(() => { openOnGame = false; if (ev) renderBar(); }, 60));
@@ -152,4 +155,4 @@ function startFx() {
   }, kind === "snow" ? 260 : 420);
 }
 
-export const V = "86ba0a930a";
+export const V = "5bdc901d4f";

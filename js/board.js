@@ -128,7 +128,7 @@ export class Board {
         el.className = "pc";
         el.dataset.c = code;
         el.style.transform = tr(...sqXY(sq, this.orient));
-        if (animate && prev.size) { el.style.opacity = "0"; requestAnimationFrame(() => { el.style.opacity = ""; }); }
+        if (animate && prev.size) { el.classList.add("pop"); setTimeout(() => el.classList.remove("pop"), 380); }  // pops in
         this.lPc.appendChild(el);
         keep.set(sq, el);
       }
@@ -136,18 +136,19 @@ export class Board {
     for (const f of free) {
       if (!f) continue;
       if (animate) {
-        f.el.classList.add("gone");
-        setTimeout(() => f.el.remove(), 190);
+        f.el.classList.remove("lift", "anim", "pop");
+        f.el.classList.add("gone");  // a taken piece spins and shrinks away
+        setTimeout(() => f.el.remove(), 260);
       } else f.el.remove();
     }
     for (const [el, sq] of moved) {
       el.classList.remove("dragging");
       const t = tr(...sqXY(sq, this.orient));
       if (animate) {
-        el.classList.add("anim");
+        el.classList.add("anim");  // slides over, a little hop and a bounce when it lands
         el.style.transform = t;
         clearTimeout(el._t);
-        el._t = setTimeout(() => el.classList.remove("anim"), 230);
+        el._t = setTimeout(() => el.classList.remove("anim"), 290);
       } else {
         el.classList.remove("anim");
         el.style.transform = t;
@@ -252,6 +253,21 @@ export class Board {
     if (this.hintSq) add(this.hintSq, "hint");
     if (this.hover) add(this.hover, "hover");
     this.lHl.innerHTML = parts.join("");
+    this.animatePieces();
+  }
+
+  // the picked-up piece floats; a king that's just been put in check shakes (the looks: site/css/v3.css)
+  animatePieces() {
+    for (const [sq, el] of this.els) el.classList.toggle("lift", sq === this.sel);
+    if (this.checkSq === this._shook) return;
+    this._shook = this.checkSq;
+    const k = this.checkSq && this.els.get(this.checkSq);
+    if (!k) return;
+    k.classList.remove("shake");
+    void k.offsetWidth;  // restart the animation
+    k.classList.add("shake");
+    clearTimeout(k._sh);
+    k._sh = setTimeout(() => k.classList.remove("shake"), 650);
   }
 
   canPick(sq) {
@@ -437,7 +453,7 @@ export class Board {
     if (!d.el) return;
     d.el.classList.add("anim");
     d.el.style.transform = tr(...sqXY(d.from, this.orient));
-    setTimeout(() => d.el.classList.remove("anim"), 230);
+    setTimeout(() => d.el.classList.remove("anim"), 290);
   }
 
   setPremove(from, to) {

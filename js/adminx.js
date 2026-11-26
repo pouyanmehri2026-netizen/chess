@@ -1,8 +1,8 @@
 // Admin panel, part 2: 🎉 Events ("admin abuse"), 🏅 Badges (every badge, the Exotic category, "how to get it" rules),
 // 🎨 Board Designer, 🤖 Bots & AI models (ArvanCloud, OpenAI, Gemini…), 🎁 Give to everyone, 🎲 community modes.
-import { t, fa, extend } from "./i18n.js?v=86ba0a930a";
-import "./i18n3.js?v=86ba0a930a";
-import { esc, toast, modal, confirmBox, timeAgo } from "./util.js?v=86ba0a930a";
+import { t, fa, extend } from "./i18n.js?v=5bdc901d4f";
+import "./i18n3.js?v=5bdc901d4f";
+import { esc, toast, modal, confirmBox, timeAgo } from "./util.js?v=5bdc901d4f";
 
 extend({
   a_events: ["Events", "رویدادها"], a_badges: ["Badges", "نشان‌ها"], a_boards: ["Boards", "صفحه‌ها"], a_bots: ["Bots & AI", "ربات و هوش مصنوعی"],
@@ -29,8 +29,9 @@ extend({
   pat_shine: ["shine", "درخشش"], pat_gradient: ["gradient", "گرادیان"],
   an_none: ["none", "هیچ"], an_hue: ["colour cycle", "چرخش رنگ"], an_hue_fast: ["fast colour cycle", "چرخش رنگ سریع"], an_aurora: ["aurora", "شفق"],
   an_matrix: ["matrix rain", "باران ماتریکس"], an_shine: ["shine sweep", "برق"], an_pulse: ["pulse", "تپش"],
-  fx_none: ["none", "هیچ"], fx_glow: ["glow", "درخشش"], fx_neon: ["neon", "نئون"], fx_shadow: ["shadow", "سایه"], fx_rainbow: ["rainbow", "رنگین‌کمان"],
-  fx_ghost: ["ghost", "روح"], fx_gold: ["gold", "طلایی"], fx_ice: ["ice", "یخی"],
+  fx_none: ["none", "هیچ"], fx_glow: ["glow (pulsing)", "درخشش (تپنده)"], fx_neon: ["neon (strong pulsing glow)", "نئون (درخشش تپنده قوی)"], fx_shadow: ["shadow", "سایه"], fx_rainbow: ["rainbow (colour cycle)", "رنگین‌کمان (چرخش رنگ)"],
+  fx_ghost: ["ghost (see-through, floating)", "روح (نیمه‌شفاف، شناور)"], fx_gold: ["gold", "طلایی"], fx_ice: ["ice", "یخی"],
+  fx_float: ["floating (animated)", "شناور (متحرک)"], fx_breathe: ["breathing (animated)", "نفس‌کشیدن (متحرک)"],
   x_calls: ["{n} calls", "{n} درخواست"],
   x_no_modes: ["No community modes yet — players make them in Modes → Mode Creator, and they show up here.", "هنوز حالتی ساخته نشده — بازیکن‌ها در «حالت‌ها ← سازنده حالت» می‌سازند و این‌جا نشان داده می‌شود."],
   x_builtin: ["Built-in", "داخلی"],x_off: ["Switched off", "خاموش"], x_holders: ["holders", "دارنده"], x_how: ["How to get it", "روش گرفتن"],
@@ -121,7 +122,7 @@ export async function events(el, c) {
       <label class="ck"><input type="checkbox" class="e-bale"> 📣 ${t("x_bale")}</label>
       <button class="btn primary e-go" ${c.owner ? "" : "disabled"}>🚀 ${t("x_ev_start")}</button></div></div>`;
   const q = (s) => el.querySelector(s);
-  const after = async (x) => { if (x.ok) { toast("✓", "good"); const { setEvent } = await import("./live.js?v=86ba0a930a"); setEvent(x.event || null); c.go("events"); } };
+  const after = async (x) => { if (x.ok) { toast("✓", "good"); const { setEvent } = await import("./live.js?v=5bdc901d4f"); setEvent(x.event || null); c.go("events"); } };
   q(".ev-stop") && (q(".ev-stop").onclick = async () => after(await c.P("adm_event_stop")));
   q(".ev-ext") && (q(".ev-ext").onclick = async () => after(await c.P("adm_event_extend", { minutes: 15 })));
   el.querySelectorAll("[data-pre]").forEach((b) => b.onclick = async () => after(await c.P("adm_event_start", { preset: b.dataset.pre })));
@@ -284,19 +285,32 @@ const PATS = {
 };
 const ANIMS = { none: "", hue: "hue 9s linear infinite", hue_fast: "hue 3s linear infinite", aurora: "aurora 12s ease-in-out infinite alternate",
   matrix: "matrix 6s linear infinite", shine: "shine 5s linear infinite", pulse: "boardpulse 3s ease-in-out infinite" };
-const PFX = { none: "", glow: "", neon: "", shadow: "drop-shadow(0 3px 2px rgba(0,0,0,.55))", rainbow: "", ghost: "", gold: "sepia(.9) saturate(2.6) hue-rotate(-12deg) brightness(1.05)",
+const PFX = { none: "", glow: "", neon: "", float: "drop-shadow(0 4px 3px rgba(0,0,0,.45))", breathe: "drop-shadow(0 3px 2px rgba(0,0,0,.45))",
+  shadow: "drop-shadow(0 3px 2px rgba(0,0,0,.55))", rainbow: "", ghost: "", gold: "sepia(.9) saturate(2.6) hue-rotate(-12deg) brightness(1.05)",
   ice: "saturate(.5) hue-rotate(175deg) brightness(1.12)" };
+// the pieces' own animation for each effect (the same as the real board: site/css/v3.css + bot/themes.py)
+const PIDLE = { glow: "pcglow 2.6s ease-in-out infinite", neon: "pcglow 2.6s ease-in-out infinite", float: "pcfloat 3s ease-in-out infinite",
+  breathe: "pcbreathe 2.4s ease-in-out infinite", rainbow: "hue 6s linear infinite", ghost: "pcfloat 4s ease-in-out infinite" };
 const hexRgba = (h) => { const x = h.replace("#", ""); const a = x.length === 8 ? parseInt(x.slice(6, 8), 16) / 255 : 1; return `rgba(${parseInt(x.slice(0, 2), 16)},${parseInt(x.slice(2, 4), 16)},${parseInt(x.slice(4, 6), 16)},${a.toFixed(2)})`; };
 
 function previewHtml(d) {
   const pat = (PATS[d.pat] || PATS.none)(hexRgba(d.pat_color || "#00000022"));
   const checker = "repeating-conic-gradient(var(--dark) 0% 25%, var(--light) 0% 50%) 0 0/25% 25%";
   const pcs = [["bR", 0, 0], ["bK", 4, 0], ["bP", 5, 1], ["bN", 2, 2], ["wP", 4, 4], ["wQ", 3, 5], ["wB", 6, 5], ["wK", 6, 7], ["wR", 5, 7]];
-  const glow = (c) => d.fx === "glow" || d.fx === "neon" ? `drop-shadow(0 0 3px ${c}) drop-shadow(0 0 ${d.fx === "neon" ? 9 : 6}px ${c})` : PFX[d.fx] || "";
-  return `<div class="cb static dz-prev" style="--light:${esc(d.light)};--dark:${esc(d.dark)};--last:${esc(hexRgba(d.last) + "")};border:6px solid ${esc(d.frame)};background:${esc(d.bg)}">
+  const glowy = d.fx === "glow" || d.fx === "neon";
+  const big = d.fx === "neon" ? 9 : 6;
+  const look = (side) => {
+    const c = esc(side === "w" ? d.wps : d.bps);
+    let s = glowy ? `--pg:${c};--pgs:${big * 2}px;filter:drop-shadow(0 0 3px ${c}) drop-shadow(0 0 ${big}px ${c});` : PFX[d.fx] ? `filter:${PFX[d.fx]};` : "";
+    if (PIDLE[d.fx]) s += `--pcidle:${PIDLE[d.fx]};`;
+    if (d.fx === "ghost") s += "opacity:.78;";
+    return s;
+  };
+  const shine = glowy ? `--frame:${esc(d.frame)};--accent-b:${esc(d.accent)};animation:boardglow 3.2s ease-in-out infinite;` : "";
+  return `<div class="cb static dz-prev" style="--light:${esc(d.light)};--dark:${esc(d.dark)};--last:${esc(hexRgba(d.last) + "")};border:6px solid ${esc(d.frame)};background:${esc(d.bg)};${shine}">
     <div class="cb-sq" style="background:${pat ? esc(pat) + "," : ""}${checker};${ANIMS[d.anim] ? `animation:${ANIMS[d.anim]}` : ""}"></div>
     <div class="cb-hl"><div class="hl last" style="transform:translate(400%,600%);background:${esc(hexRgba(d.last))};opacity:${d.last_alpha || .55}"></div><div class="hl last" style="transform:translate(400%,400%);background:${esc(hexRgba(d.last))};opacity:${d.last_alpha || .55}"></div></div>
-    <div class="cb-pc">${pcs.map(([p, x, y]) => `<span class="pc" data-c="${p}" style="transform:translate(${x * 100}%,${y * 100}%);filter:${glow(p[0] === "w" ? d.wps : d.bps)};${d.fx === "rainbow" ? "animation:hue 6s linear infinite;" : ""}${d.fx === "ghost" ? "opacity:.78;" : ""}"></span>`).join("")}</div></div>`;
+    <div class="cb-pc">${pcs.map(([p, x, y]) => `<span class="pc" data-c="${p}" style="transform:translate(${x * 100}%,${y * 100}%);${look(p[0])}"></span>`).join("")}</div></div>`;
 }
 
 export async function boards(el, c) {
@@ -373,7 +387,7 @@ export async function boards(el, c) {
       if (!d.en.trim()) { toast(t("x_name_en") + "?", "bad"); return false; }
       const x = await c.P("adm_board_save", { ...d, id: b ? b.id : undefined });
       if (!x.ok) return false;
-      const { injectCss } = await import("./live.js?v=86ba0a930a");
+      const { injectCss } = await import("./live.js?v=5bdc901d4f");
       injectCss(x.css);
       toast("🎨 ✓", "good");
       c.go("boards");
@@ -570,4 +584,4 @@ export async function modes(el, c) {
   el.querySelectorAll("[data-act]").forEach((b) => b.onclick = async () => { if ((await c.P("adm_mode", { id: +b.dataset.id, action: b.dataset.act })).ok) c.go("modes"); });
 }
 
-export const V = "86ba0a930a";
+export const V = "5bdc901d4f";
