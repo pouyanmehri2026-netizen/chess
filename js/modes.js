@@ -1,11 +1,11 @@
 // #/modes — every game mode (King of the Hill, Atomic, Crazyhouse, Fog of War, Double Move…), the community's
 // modes, the Mode Creator, and one Play dialog for all of them: against a bot (any bot, also the Bot Creator's),
 // online (an open challenge everyone can join), or a friend (invite link).
-import * as api from "./api.js?v=ffa8bb0e87";
-import { t, fa, extend } from "./i18n.js?v=ffa8bb0e87";
-import "./i18n3.js?v=ffa8bb0e87";
-import { esc, toast, store, modal, confirmBox, titleHtml } from "./util.js?v=ffa8bb0e87";
-import { loadBots, botName } from "./local.js?v=ffa8bb0e87";
+import * as api from "./api.js?v=86ba0a930a";
+import { t, fa, extend } from "./i18n.js?v=86ba0a930a";
+import "./i18n3.js?v=86ba0a930a";
+import { esc, toast, store, modal, confirmBox, titleHtml } from "./util.js?v=86ba0a930a";
+import { loadBots, botName } from "./local.js?v=86ba0a930a";
 
 extend({
   modes_title: ["Game modes", "حالت‌های بازی"],
@@ -325,4 +325,4 @@ export function creator(nav, edit = null, fen = null) {
   ] });
 }
 
-export const V = "ffa8bb0e87";
+export const V = "86ba0a930a";

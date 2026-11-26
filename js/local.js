@@ -1,12 +1,12 @@
 // Games against the bots. Everything runs in the browser (Stockfish 19 in a Web Worker),
 // so the bots answer instantly and keep working even when the game server is offline.
-import { Chess } from "./vendor/chess.js?v=ffa8bb0e87";
-import { GameView, START_FEN } from "./gameview.js?v=ffa8bb0e87";
-import { getEngine } from "./engine.js?v=ffa8bb0e87";
-import { t, fa } from "./i18n.js?v=ffa8bb0e87";
-import { store, toast, confirmBox, initials, sleep, esc } from "./util.js?v=ffa8bb0e87";
-import { play } from "./sound.js?v=ffa8bb0e87";
-import * as api from "./api.js?v=ffa8bb0e87";
+import { Chess } from "./vendor/chess.js?v=86ba0a930a";
+import { GameView, START_FEN } from "./gameview.js?v=86ba0a930a";
+import { getEngine } from "./engine.js?v=86ba0a930a";
+import { t, fa } from "./i18n.js?v=86ba0a930a";
+import { store, toast, confirmBox, initials, sleep, esc } from "./util.js?v=86ba0a930a";
+import { play } from "./sound.js?v=86ba0a930a";
+import * as api from "./api.js?v=86ba0a930a";
 
 // How each bot chooses its moves (levels match the Bale bot: club 1–11, Stockfish 21–28).
 const PLAY = {
@@ -24,7 +24,7 @@ const PLAY = {
 
 let BOTS = null;
 export async function loadBots() {
-  if (!BOTS) BOTS = await (await fetch("data/bots.json?v=ffa8bb0e87")).json();
+  if (!BOTS) BOTS = await (await fetch("data/bots.json?v=86ba0a930a")).json();
   return BOTS;
 }
 export function botName(b) { return (b.title ? b.title + " " : "") + (fa() ? b.name_fa : b.name); }
@@ -376,4 +376,4 @@ export class LocalGame {
 
   destroy() { this.alive = false; if (this.view) this.view.destroy(); }
 }
-export const V = "ffa8bb0e87";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "86ba0a930a";  // the site version this file belongs to (main.js reloads the page after an update)

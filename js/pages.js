@@ -1,11 +1,11 @@
 // The two menu pages: Play (online matchmaking, friend invites, resume) and Bots (pick an opponent).
-import { t, fa } from "./i18n.js?v=ffa8bb0e87";
-import "./i18n3.js?v=ffa8bb0e87";
-import { store, esc, toast, sleep, confirmBox, titleHtml, nameHtml, modal } from "./util.js?v=ffa8bb0e87";
-import * as api from "./api.js?v=ffa8bb0e87";
-import { loadBots, botName } from "./local.js?v=ffa8bb0e87";
-import { play } from "./sound.js?v=ffa8bb0e87";
-import { loadMe as sessionMe } from "./session.js?v=ffa8bb0e87";
+import { t, fa } from "./i18n.js?v=86ba0a930a";
+import "./i18n3.js?v=86ba0a930a";
+import { store, esc, toast, sleep, confirmBox, titleHtml, nameHtml, modal } from "./util.js?v=86ba0a930a";
+import * as api from "./api.js?v=86ba0a930a";
+import { loadBots, botName } from "./local.js?v=86ba0a930a";
+import { play } from "./sound.js?v=86ba0a930a";
+import { loadMe as sessionMe } from "./session.js?v=86ba0a930a";
 
 // the game modes offered right on the Play page (all of them are on #/modes)
 const QUICK_MODES = [["standard", "♟️"], ["960", "🎲"], ["koth", "👑"], ["3check", "✚"], ["atomic", "💥"], ["crazyhouse", "🪂"],
@@ -151,7 +151,7 @@ export function renderPlay(view, nav) {
         try {
           const r = await api.post("invite", { t: u, tc, rated: mode === "standard" || mode === "960", mode, color, l: fa() ? "fa" : "en" });
           if (!r.code) { toast(r.error || t("offline")); return false; }
-          const { inviteModal } = await import("./modes.js?v=ffa8bb0e87");
+          const { inviteModal } = await import("./modes.js?v=86ba0a930a");
           inviteModal(r);
           return true;
         } catch { toast(t("offline")); return false; }
@@ -310,7 +310,7 @@ export async function renderBots(view, nav) {
     setup.classList.add("open");
     if (scroll && window.innerWidth < 900) setup.scrollIntoView({ behavior: "smooth", block: "nearest" });
   };
-  import("./modes.js?v=ffa8bb0e87").then(({ customBots }) => customBots()).then((list) => {
+  import("./modes.js?v=86ba0a930a").then(({ customBots }) => customBots()).then((list) => {
     extra = list || [];
     const box = view.querySelector(".xbots");
     if (!box || !extra.length) return;
@@ -362,4 +362,4 @@ export async function renderBots(view, nav) {
   });
   return { destroy() {} };
 }
-export const V = "ffa8bb0e87";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "86ba0a930a";  // the site version this file belongs to (main.js reloads the page after an update)

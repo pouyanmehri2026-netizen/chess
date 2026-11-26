@@ -1,38 +1,69 @@
 /* Chess v2.2 — game modes, Mode Creator, Position Editor, lobby, Bot Creator & AI bots, exotic badges,
    Board Designer, admin events, and move dots you can always see. */
 
-/* ───────── move dots: visible on every board design ───────── */
-/* bold (default): a dark core with a light rim — dark squares show the rim, light squares the core */
-.dest::after { width: 28%; height: 28%; background: #fff; box-shadow: 0 0 0 3px rgba(0, 0, 0, .85), 0 0 8px 2px rgba(0, 0, 0, .55); }
-.dest.cap::after { width: 90%; height: 90%; background: transparent; border-radius: 50%;
-  box-shadow: inset 0 0 0 3px rgba(0, 0, 0, .85), inset 0 0 0 7px #fff, inset 0 0 0 9px rgba(0, 0, 0, .7); }
-.dest.pre::after { background: rgba(214, 40, 40, .7); box-shadow: 0 0 0 .5cqw rgba(255, 255, 255, .55); }
-.dest.pre.cap::after { background: transparent; box-shadow: inset 0 0 0 .95cqw rgba(214, 40, 40, .7), inset 0 0 0 1.45cqw rgba(255, 255, 255, .45); }
-.dest.drop::after { background: rgba(40, 120, 230, .75); box-shadow: 0 0 0 .55cqw rgba(255, 255, 255, .7); width: 36%; height: 36%; }
-html[data-dots="ring"] .dest::after { width: 40%; height: 40%; background: transparent; box-shadow: inset 0 0 0 2px rgba(0, 0, 0, .85), inset 0 0 0 6px #fff, inset 0 0 0 8px rgba(0, 0, 0, .7), 0 0 0 2px rgba(0, 0, 0, .85); }
-html[data-dots="glow"] .dest::after { width: 32%; height: 32%; background: var(--accent-b, #81b64c);
-  box-shadow: 0 0 0 .45cqw rgba(255, 255, 255, .85), 0 0 1.6cqw .4cqw var(--accent-b, #81b64c); }
-html[data-dots="glow"] .dest.cap::after { background: transparent; box-shadow: inset 0 0 0 .9cqw var(--accent-b, #81b64c), inset 0 0 1.4cqw rgba(255, 255, 255, .8); }
-html[data-dots="big"] .dest::after { width: 44%; height: 44%; }
-html[data-dots="classic"] .dest::after { width: 33%; height: 33%; background: rgba(0, 0, 0, .14); box-shadow: none; }
-html[data-dots="classic"] .dest.cap::after { width: 100%; height: 100%; background: transparent; box-shadow: inset 0 0 0 1.05cqw rgba(0, 0, 0, .14); }
+/* ───────── move dots: UNDER the pieces (a piece is never covered), visible on every board design ───────── */
+/* bold (default): a white dot with a dark edge · a capture: a white ring with dark edges around the piece */
+.dest::after { width: 30%; height: 30%; background: #fff; box-shadow: 0 0 0 max(2px, .38cqw) rgba(0, 0, 0, .8), 0 0 max(5px, 1cqw) rgba(0, 0, 0, .4); }
+.dest.cap::after { width: 100%; height: 100%; background: transparent;
+  box-shadow: inset 0 0 0 max(1.5px, .3cqw) rgba(0, 0, 0, .75), inset 0 0 0 max(4px, 1cqw) rgba(255, 255, 255, .95), inset 0 0 0 max(5.5px, 1.35cqw) rgba(0, 0, 0, .55); }
+.dest.pre::after { background: #ff6b6b; box-shadow: 0 0 0 max(2px, .38cqw) rgba(80, 0, 0, .85); }
+.dest.pre.cap::after { background: transparent; box-shadow: inset 0 0 0 max(1.5px, .3cqw) rgba(80, 0, 0, .8), inset 0 0 0 max(4px, 1cqw) #ff6b6b, inset 0 0 0 max(5.5px, 1.35cqw) rgba(80, 0, 0, .6); }
+.dest.drop::after { width: 36%; height: 36%; background: #4d9cff; box-shadow: 0 0 0 max(2px, .38cqw) rgba(255, 255, 255, .85), 0 0 max(5px, 1cqw) rgba(0, 0, 0, .4); }
+html[data-dots="ring"] .dest:not(.cap)::after { width: 42%; height: 42%; background: transparent;
+  box-shadow: inset 0 0 0 max(1.5px, .3cqw) rgba(0, 0, 0, .8), inset 0 0 0 max(4px, .95cqw) #fff, 0 0 0 max(1.5px, .3cqw) rgba(0, 0, 0, .8); }
+html[data-dots="glow"] .dest:not(.pre)::after { width: 32%; height: 32%; background: var(--accent-b, #81b64c);
+  box-shadow: 0 0 0 max(2px, .4cqw) rgba(255, 255, 255, .9), 0 0 max(8px, 1.8cqw) max(2px, .4cqw) var(--accent-b, #81b64c); }
+html[data-dots="glow"] .dest.cap:not(.pre)::after { width: 100%; height: 100%; background: transparent;
+  box-shadow: inset 0 0 0 max(2px, .4cqw) rgba(255, 255, 255, .9), inset 0 0 0 max(5px, 1.2cqw) var(--accent-b, #81b64c), inset 0 0 max(8px, 2cqw) var(--accent-b, #81b64c); }
+html[data-dots="big"] .dest:not(.cap)::after { width: 44%; height: 44%; }
+html[data-dots="classic"] .dest:not(.pre)::after { width: 33%; height: 33%; background: rgba(0, 0, 0, .14); box-shadow: none; }
+html[data-dots="classic"] .dest.cap:not(.pre)::after { width: 100%; height: 100%; background: transparent; box-shadow: inset 0 0 0 max(4px, 1.05cqw) rgba(0, 0, 0, .14); }
 .dp-demo { display: grid; grid-template-columns: repeat(2, 26px); width: 52px; height: 52px; border-radius: 4px; overflow: hidden; container-type: inline-size; }
 .dp-demo i { position: relative; display: block; width: 26px; height: 26px; background: var(--light); }
 .dp-demo i.d { background: var(--dark); }
 .dp-demo b { position: absolute; inset: 0; }
 .dp-demo b::after { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); border-radius: 50%; }
+.dp-demo .cap .pc { position: absolute; inset: 0; width: 100%; height: 100%; transform: none; z-index: 1; }
 .dot-pick { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 12px; }
 .dp { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px; border-radius: 10px; background: #1f1e1c; font-size: 12px; font-weight: 700; }
 .dp.on { box-shadow: 0 0 0 3px var(--green); }
 /* the demos use the same look as the board (each one forced to its own style) */
-.dp-demo[data-demo] b::after { width: 30%; height: 30%; background: rgba(12, 12, 12, .55); box-shadow: 0 0 0 2px rgba(255, 255, 255, .62); }
-.dp-demo[data-demo] .cap b::after { width: 86%; height: 86%; background: transparent; box-shadow: inset 0 0 0 3px rgba(12, 12, 12, .55), inset 0 0 0 5px rgba(255, 255, 255, .5); }
-.dp-demo[data-demo="ring"] b::after { width: 42%; height: 42%; background: transparent; box-shadow: inset 0 0 0 3px rgba(15, 15, 15, .65), 0 0 0 2px rgba(255, 255, 255, .6); }
-.dp-demo[data-demo="glow"] b::after { background: var(--green); box-shadow: 0 0 0 2px #fff, 0 0 7px 2px var(--green); }
-.dp-demo[data-demo="glow"] .cap b::after { background: transparent; box-shadow: inset 0 0 0 3px var(--green), inset 0 0 6px #fff; }
-.dp-demo[data-demo="big"] b::after { width: 46%; height: 46%; }
+.dp-demo[data-demo] b::after { width: 30%; height: 30%; background: #fff; box-shadow: 0 0 0 2px rgba(0, 0, 0, .8), 0 0 5px rgba(0, 0, 0, .4); }
+.dp-demo[data-demo] .cap b::after { width: 100%; height: 100%; background: transparent; box-shadow: inset 0 0 0 1.5px rgba(0, 0, 0, .75), inset 0 0 0 4px #fff, inset 0 0 0 5.5px rgba(0, 0, 0, .55); }
+.dp-demo[data-demo="ring"] :not(.cap) > b::after { width: 42%; height: 42%; background: transparent; box-shadow: inset 0 0 0 1.5px rgba(0, 0, 0, .8), inset 0 0 0 4px #fff, 0 0 0 1.5px rgba(0, 0, 0, .8); }
+.dp-demo[data-demo="glow"] b::after { width: 32%; height: 32%; background: var(--accent-b, var(--green)); box-shadow: 0 0 0 2px #fff, 0 0 8px 2px var(--accent-b, var(--green)); }
+.dp-demo[data-demo="glow"] .cap b::after { width: 100%; height: 100%; background: transparent; box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 5px var(--accent-b, var(--green)), inset 0 0 8px var(--accent-b, var(--green)); }
+.dp-demo[data-demo="big"] :not(.cap) > b::after { width: 46%; height: 46%; }
 .dp-demo[data-demo="classic"] b::after { width: 33%; height: 33%; background: rgba(0, 0, 0, .14); box-shadow: none; }
 .dp-demo[data-demo="classic"] .cap b::after { width: 100%; height: 100%; background: transparent; box-shadow: inset 0 0 0 4px rgba(0, 0, 0, .14); }
+
+/* ───────── the board's frame and glow (the same look as the Bale pictures) ───────── */
+.board-wrap > .cb, .ed-board .cb { border-radius: 4px; box-shadow: 0 0 0 4px var(--frame, #3b4a2c), 0 10px 30px rgba(0, 0, 0, .45); }
+@keyframes boardglow { 0%, 100% { box-shadow: 0 0 0 4px var(--frame, #3b4a2c), 0 0 16px 3px var(--accent-b, #81b64c); }
+  50% { box-shadow: 0 0 0 4px var(--frame, #3b4a2c), 0 0 34px 9px var(--accent-b, #81b64c); } }
+
+/* ───────── piece animations: slide + bounce, lift when picked, pop in, shrink away when taken, a king in check shakes,
+   and glowing designs breathe ───────── */
+/* the design's own idle animation (--pcidle) is always the first layer, a one-off move animation the second */
+.cb .cb-pc .pc { animation: var(--pcidle, pcnone 1s); }
+.cb .cb-pc .pc.anim { animation: var(--pcidle, pcnone 1s), pcmove .26s ease-out; }
+.cb .cb-pc .pc.lift { scale: 1.1; z-index: 2; animation: var(--pcidle, pcnone 1s), pclift .6s ease-in-out infinite alternate; }
+.cb .cb-pc .pc.dragging { scale: 1.2; animation: var(--pcidle, pcnone 1s); }
+.cb .cb-pc .pc.pop { animation: var(--pcidle, pcnone 1s), pcin .34s cubic-bezier(.2, .9, .3, 1.4); }
+.cb .cb-pc .pc.shake { animation: var(--pcidle, pcnone 1s), pcshake .6s ease-in-out; }
+.cb .cb-pc .pc.gone { animation: pcgone .25s ease-in forwards !important; }
+@keyframes pcmove { 0% { scale: 1; } 45% { scale: 1.17; } 80% { scale: .95; } 100% { scale: 1; } }
+@keyframes pclift { from { translate: 0 0; } to { translate: 0 -7%; } }
+@keyframes pcin { 0% { scale: .2; opacity: 0; } 70% { scale: 1.16; opacity: 1; } 100% { scale: 1; } }
+@keyframes pcshake { 0%, 100% { translate: 0 0; } 15% { translate: -9% 0; } 30% { translate: 9% 0; } 45% { translate: -6% 0; } 60% { translate: 6% 0; } 75% { translate: -3% 0; } }
+@keyframes pcgone { to { scale: .2; rotate: 40deg; opacity: 0; } }
+@keyframes pcglow { 0%, 100% { filter: drop-shadow(0 0 2px var(--pg, #fff)) drop-shadow(0 0 4px var(--pg, #fff)); }
+  50% { filter: drop-shadow(0 0 4px var(--pg, #fff)) drop-shadow(0 0 var(--pgs, 12px) var(--pg, #fff)); } }
+@keyframes pcfloat { 0%, 100% { translate: 0 0; } 50% { translate: 0 -5%; } }
+.cb .cb-pc .pc:nth-child(3n) { animation-delay: -.9s, 0s; }      /* the idle animation doesn't run in lock-step */
+.cb .cb-pc .pc:nth-child(3n+1) { animation-delay: -1.8s, 0s; }
+html.calm .cb .cb-pc .pc:not(.gone), html.calm .board-wrap > .cb { animation: none !important; }  /* Settings: effects off */
+@media (prefers-reduced-motion: reduce) { .cb .cb-pc .pc:not(.gone), .board-wrap > .cb { animation: none !important; } }
 
 /* ───────── board layers for game modes ───────── */
 .hl.zone.hill { box-shadow: inset 0 0 0 .5cqw rgba(255, 215, 0, .85); background: rgba(255, 215, 0, .16); }
@@ -53,10 +84,16 @@ html[data-dots="classic"] .dest.cap::after { width: 100%; height: 100%; backgrou
 @keyframes shine { from { background-position: 150% 0, 0 0; } to { background-position: -150% 0, 0 0; } }
 @keyframes boardpulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.18) saturate(1.15); } }
 
-/* the settings' board previews: the real design (colours, pattern, animation) */
+/* the settings' board previews: the real design (colours, pattern, animation, glowing + animated pieces) */
 .th-mini { position: relative; display: block; aspect-ratio: 1; }
 .th-mini > i { display: none; }
 .th-prev { position: absolute; inset: 0; background: repeating-conic-gradient(var(--dark) 0% 25%, var(--light) 0% 50%) 0 0/25% 25%; }
+.th-prev .pc { position: absolute; width: 25%; height: 25%; transform: none; will-change: auto; animation: var(--pcidle, pcnone 1s); }
+.th-prev .pc:nth-child(1) { left: 25%; top: 25%; }
+.th-prev .pc:nth-child(2) { left: 50%; top: 50%; animation-delay: -1.3s; }
+.th-card.glow .th-mini { animation: miniglow 3.2s ease-in-out infinite; }
+@keyframes miniglow { 0%, 100% { box-shadow: 0 0 8px 1px var(--acc); } 50% { box-shadow: 0 0 22px 5px var(--acc); } }
+html.calm .th-prev .pc, html.calm .th-card.glow .th-mini { animation: none; }
 .th-tag { position: absolute; top: 4px; inset-inline-start: 4px; background: var(--green); color: #fff; font-size: 10px; font-weight: 900; padding: 1px 6px; border-radius: 6px; z-index: 2; }
 .th-tag.sp { background: linear-gradient(90deg, #ff2bd6, #7c4dff); }
 .th-card.special { background: linear-gradient(160deg, #2a1f33, #1f1e1c); }
