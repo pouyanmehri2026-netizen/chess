@@ -1,11 +1,11 @@
 // #/editor — the Position Editor: set up any position, check it, then play it against any bot (the website's
 // own bots, the Bot Creator's, AI models), online, or with a friend — or use it in the Mode Creator.
-import * as api from "./api.js?v=5bdc901d4f";
-import { t, fa, extend } from "./i18n.js?v=5bdc901d4f";
-import "./i18n3.js?v=5bdc901d4f";
-import { esc, toast, store } from "./util.js?v=5bdc901d4f";
-import { Board, parseFen } from "./board.js?v=5bdc901d4f";
-import { Chess } from "./vendor/chess.js?v=5bdc901d4f";
+import * as api from "./api.js?v=1c105c2606";
+import { t, fa, extend } from "./i18n.js?v=1c105c2606";
+import "./i18n3.js?v=1c105c2606";
+import { esc, toast, store } from "./util.js?v=1c105c2606";
+import { Board, parseFen } from "./board.js?v=1c105c2606";
+import { Chess } from "./vendor/chess.js?v=1c105c2606";
 
 extend({
   ed_title: ["Position Editor", "ویرایشگر وضعیت"],
@@ -147,7 +147,7 @@ export async function renderEditor(view, nav, params = {}) {
     } else if (k === "play") {
       const r = await check();
       if (!r) return;
-      const { playDialog } = await import("./modes.js?v=5bdc901d4f");
+      const { playDialog } = await import("./modes.js?v=1c105c2606");
       const spec = { core: "classic", start: "fen", fen: r.fen || fen() };
       playDialog(nav, { spec, name: t("ed_custom"), emoji: "🧩" }, { name: t("ed_custom"), emoji: "🧩", rules: [], spec }, { fen: r.fen || fen() });
     } else if (k === "local") {
@@ -169,7 +169,7 @@ export async function renderEditor(view, nav, params = {}) {
     if (c.isGameOver()) { msg(c.isCheckmate() ? "# " + (c.turn() === "w" ? "0-1" : "1-0") : "½-½"); return; }
     msg(`<span class="dots">📊</span>`);
     try {
-      const { getEngine } = await import("./engine.js?v=5bdc901d4f");
+      const { getEngine } = await import("./engine.js?v=1c105c2606");
       const res = await getEngine("analysis").search({ fen: fen(), depth: 16, movetime: 1500, skill: 20 });
       const line = res.lines && res.lines[0];
       if (!line) { msg("—"); return; }
@@ -186,4 +186,4 @@ export async function renderEditor(view, nav, params = {}) {
   return { destroy() { board.destroy(); } };
 }
 
-export const V = "5bdc901d4f";
+export const V = "1c105c2606";

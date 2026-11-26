@@ -1,11 +1,11 @@
 // The two menu pages: Play (online matchmaking, friend invites, resume) and Bots (pick an opponent).
-import { t, fa } from "./i18n.js?v=5bdc901d4f";
-import "./i18n3.js?v=5bdc901d4f";
-import { store, esc, toast, sleep, confirmBox, titleHtml, nameHtml, modal } from "./util.js?v=5bdc901d4f";
-import * as api from "./api.js?v=5bdc901d4f";
-import { loadBots, botName } from "./local.js?v=5bdc901d4f";
-import { play } from "./sound.js?v=5bdc901d4f";
-import { loadMe as sessionMe } from "./session.js?v=5bdc901d4f";
+import { t, fa } from "./i18n.js?v=1c105c2606";
+import "./i18n3.js?v=1c105c2606";
+import { store, esc, toast, sleep, confirmBox, titleHtml, nameHtml, modal } from "./util.js?v=1c105c2606";
+import * as api from "./api.js?v=1c105c2606";
+import { loadBots, botName } from "./local.js?v=1c105c2606";
+import { play } from "./sound.js?v=1c105c2606";
+import { loadMe as sessionMe } from "./session.js?v=1c105c2606";
 
 // the game modes offered right on the Play page (all of them are on #/modes)
 const QUICK_MODES = [["standard", "♟️"], ["960", "🎲"], ["koth", "👑"], ["3check", "✚"], ["atomic", "💥"], ["crazyhouse", "🪂"],
@@ -151,7 +151,7 @@ export function renderPlay(view, nav) {
         try {
           const r = await api.post("invite", { t: u, tc, rated: mode === "standard" || mode === "960", mode, color, l: fa() ? "fa" : "en" });
           if (!r.code) { toast(r.error || t("offline")); return false; }
-          const { inviteModal } = await import("./modes.js?v=5bdc901d4f");
+          const { inviteModal } = await import("./modes.js?v=1c105c2606");
           inviteModal(r);
           return true;
         } catch { toast(t("offline")); return false; }
@@ -270,7 +270,7 @@ export async function renderBots(view, nav) {
   const xcard = (b) => `<button class="bot-card x${b.kind === "ai" ? " ai" : ""}${b.inf ? " inf" : ""}" data-l="${b.level}">
     <div class="av bot lg emo" style="background:${esc(b.color)}">${esc(b.emoji)}</div>
     <div class="bc-n" dir="auto">${b.title ? `<span class="ttl">${esc(b.title)}</span>` : ""}${esc(b.name)}</div>
-    <div class="bc-r">${b.kind === "ai" ? `🧠 ${esc(b.model)}` : b.inf ? "∞" : b.elo}</div>${b.kind === "ai" && b.illegal ? `<span class="bc-wild">🤡</span>` : ""}</button>`;
+    <div class="bc-r">${b.inf ? "∞" : b.kind === "ai" ? (b.elo ? b.elo + " · " : "") + `🧠 ${esc(b.model)}` : b.elo}</div>${b.kind === "ai" && b.illegal ? `<span class="bc-wild">🤡</span>` : ""}</button>`;
   const showX = (b, scroll) => {
     sel.level = b.level;
     view.querySelectorAll(".bot-card").forEach((c) => c.classList.toggle("sel", +c.dataset.l === b.level));
@@ -281,7 +281,7 @@ export async function renderBots(view, nav) {
     setup.innerHTML = `<div class="bs-card">
       <div class="bs-top"><div class="av bot xl emo" style="background:${esc(b.color)}">${esc(b.emoji)}</div>
         <div><div class="bs-name" dir="auto">${b.title ? `<span class="ttl">${esc(b.title)}</span>` : ""}${esc(b.name)}</div>
-        <div class="bs-meta">${ai ? `🧠 ${esc(b.model)}` : `${t("rating")} <b>${b.inf ? "∞ · " + t("inf_rating") : b.elo}</b>`}</div></div></div>
+        <div class="bs-meta">${ai ? `${b.inf ? `${t("rating")} <b>∞</b> · ` : ""}🧠 ${esc(b.model)}` : `${t("rating")} <b>${b.inf ? "∞ · " + t("inf_rating") : b.elo}</b>`}</div></div></div>
       ${b.bio ? `<p class="bs-bio" dir="auto">${esc(b.bio)}</p>` : ""}
       ${ai ? `<p class="note small">${b.illegal ? t("ai_bot_note") : t("ai_legal_note")}</p>` : ""}
       <p class="muted small">📊 ${t("bot_record")}: ${b.wins}–${b.losses}–${b.draws} · ${t("server_game")}</p>
@@ -310,7 +310,7 @@ export async function renderBots(view, nav) {
     setup.classList.add("open");
     if (scroll && window.innerWidth < 900) setup.scrollIntoView({ behavior: "smooth", block: "nearest" });
   };
-  import("./modes.js?v=5bdc901d4f").then(({ customBots }) => customBots()).then((list) => {
+  import("./modes.js?v=1c105c2606").then(({ customBots }) => customBots()).then((list) => {
     extra = list || [];
     const box = view.querySelector(".xbots");
     if (!box || !extra.length) return;
@@ -362,4 +362,4 @@ export async function renderBots(view, nav) {
   });
   return { destroy() {} };
 }
-export const V = "5bdc901d4f";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "1c105c2606";  // the site version this file belongs to (main.js reloads the page after an update)

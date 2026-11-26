@@ -1,12 +1,12 @@
 // Puzzles: 6,600+ rated puzzles (Lichess puzzle database, CC0) solved right in the browser.
 // Rated mode keeps a puzzle rating (synced to the Bale profile when opened from Bale);
 // Sprint mode = 3 minutes, 3 lives, puzzles get harder as you go.
-import { Chess } from "./vendor/chess.js?v=5bdc901d4f";
-import { GameView } from "./gameview.js?v=5bdc901d4f";
-import { t, fa, themeName } from "./i18n.js?v=5bdc901d4f";
-import { store, toast, sleep, esc, fmtClock } from "./util.js?v=5bdc901d4f";
-import { play, playMove } from "./sound.js?v=5bdc901d4f";
-import * as api from "./api.js?v=5bdc901d4f";
+import { Chess } from "./vendor/chess.js?v=1c105c2606";
+import { GameView } from "./gameview.js?v=1c105c2606";
+import { t, fa, themeName } from "./i18n.js?v=1c105c2606";
+import { store, toast, sleep, esc, fmtClock } from "./util.js?v=1c105c2606";
+import { play, playMove } from "./sound.js?v=1c105c2606";
+import * as api from "./api.js?v=1c105c2606";
 
 const OK_ICON = '<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="#fff"/></svg>';
 const BAD_ICON = '<svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="#fff"/></svg>';
@@ -14,10 +14,10 @@ const buckets = {};
 let index = null;
 
 async function bucket(b) {
-  if (!index) index = await (await fetch("data/pz/index.json?v=5bdc901d4f")).json();
+  if (!index) index = await (await fetch("data/pz/index.json?v=1c105c2606")).json();
   const keys = Object.keys(index.buckets).map(Number).sort((a, c) => a - c);
   b = keys.reduce((best, k) => (Math.abs(k - b) < Math.abs(best - b) ? k : best), keys[0]);
-  if (!buckets[b]) buckets[b] = await (await fetch(`data/pz/${b}.json?v=5bdc901d4f`)).json();
+  if (!buckets[b]) buckets[b] = await (await fetch(`data/pz/${b}.json?v=1c105c2606`)).json();
   return buckets[b];
 }
 
@@ -331,4 +331,4 @@ export class Puzzles {
 
   destroy() { this.alive = false; clearInterval(this.timer); this.view.destroy(); }
 }
-export const V = "5bdc901d4f";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "1c105c2606";  // the site version this file belongs to (main.js reloads the page after an update)

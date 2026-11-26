@@ -1,8 +1,8 @@
 // Admin panel, part 2: 🎉 Events ("admin abuse"), 🏅 Badges (every badge, the Exotic category, "how to get it" rules),
 // 🎨 Board Designer, 🤖 Bots & AI models (ArvanCloud, OpenAI, Gemini…), 🎁 Give to everyone, 🎲 community modes.
-import { t, fa, extend } from "./i18n.js?v=5bdc901d4f";
-import "./i18n3.js?v=5bdc901d4f";
-import { esc, toast, modal, confirmBox, timeAgo } from "./util.js?v=5bdc901d4f";
+import { t, fa, extend } from "./i18n.js?v=1c105c2606";
+import "./i18n3.js?v=1c105c2606";
+import { esc, toast, modal, confirmBox, timeAgo } from "./util.js?v=1c105c2606";
 
 extend({
   a_events: ["Events", "رویدادها"], a_badges: ["Badges", "نشان‌ها"], a_boards: ["Boards", "صفحه‌ها"], a_bots: ["Bots & AI", "ربات و هوش مصنوعی"],
@@ -122,7 +122,7 @@ export async function events(el, c) {
       <label class="ck"><input type="checkbox" class="e-bale"> 📣 ${t("x_bale")}</label>
       <button class="btn primary e-go" ${c.owner ? "" : "disabled"}>🚀 ${t("x_ev_start")}</button></div></div>`;
   const q = (s) => el.querySelector(s);
-  const after = async (x) => { if (x.ok) { toast("✓", "good"); const { setEvent } = await import("./live.js?v=5bdc901d4f"); setEvent(x.event || null); c.go("events"); } };
+  const after = async (x) => { if (x.ok) { toast("✓", "good"); const { setEvent } = await import("./live.js?v=1c105c2606"); setEvent(x.event || null); c.go("events"); } };
   q(".ev-stop") && (q(".ev-stop").onclick = async () => after(await c.P("adm_event_stop")));
   q(".ev-ext") && (q(".ev-ext").onclick = async () => after(await c.P("adm_event_extend", { minutes: 15 })));
   el.querySelectorAll("[data-pre]").forEach((b) => b.onclick = async () => after(await c.P("adm_event_start", { preset: b.dataset.pre })));
@@ -387,7 +387,7 @@ export async function boards(el, c) {
       if (!d.en.trim()) { toast(t("x_name_en") + "?", "bad"); return false; }
       const x = await c.P("adm_board_save", { ...d, id: b ? b.id : undefined });
       if (!x.ok) return false;
-      const { injectCss } = await import("./live.js?v=5bdc901d4f");
+      const { injectCss } = await import("./live.js?v=1c105c2606");
       injectCss(x.css);
       toast("🎨 ✓", "good");
       c.go("boards");
@@ -403,13 +403,13 @@ export async function bots(el, c) {
   el.innerHTML = `<div class="adm-cols">
     <div class="card"><h2>🧠 ${t("x_models")}</h2><button class="btn primary sm m-new" ${c.owner ? "" : "disabled"}>➕ ${t("x_new_model")}</button>
       <div class="mlist">${r.models.map((m) => `<div class="mrow${m.enabled ? "" : " off"}"><div><b dir="auto">${esc(m.name)}</b> <span class="muted small" dir="ltr">${esc(m.model)} · ${esc(m.provider)}</span>
-        <div class="muted small" dir="ltr">${esc(m.base_url)}</div><div class="small">🔑 <span dir="ltr">${esc(m.key_hint)}</span> · ${esc(m.auth)} · ${t("x_calls", { n: m.calls })} · ${m.fails} ✕ · 🤖 ${m.bots}
+        <div class="muted small" dir="ltr">${esc(m.base_url)}</div><div class="small">🔑 <span dir="ltr">${esc(m.key_hint)}</span> · ${esc(m.auth)} · ${t("x_calls", { n: m.calls })} · 🪙 ${m.tokens || 0} tokens · ${m.fails} ✕ · 🤖 ${m.bots}
         ${m.last_error ? `<div class="bad small" dir="ltr">⚠️ ${esc(m.last_error)}</div>` : m.last_ok ? `<span class="good"> · ✓ ${timeAgo(m.last_ok, fa())}</span>` : ""}</div></div>
         ${c.owner ? `<div class="row-b"><button class="btn sm" data-test="${m.id}">🧪 ${t("x_test")}</button><button class="btn sm" data-medit="${m.id}">✏️</button>
           <button class="btn sm danger" data-mdel="${m.id}">🗑</button></div>` : ""}</div>`).join("") || `<p class="muted small">${t("x_no_models")}</p>`}</div></div>
     <div class="card"><h2>🛠 ${t("x_bots")}</h2><button class="btn primary sm b-new" ${c.owner ? "" : "disabled"}>➕ ${t("x_new_bot")}</button>
       <div class="blist">${r.bots.map((b) => `<div class="brow"><span class="av bot emo" style="background:${esc(b.color)}">${esc(b.emoji)}</span>
-        <div><b dir="auto">${esc(b.name)}</b> ${b.title ? `<span class="ttl">${esc(b.title)}</span>` : ""} <span class="muted small">${b.kind === "ai" ? `🧠 ${esc(b.model)}${b.illegal ? " 🤡" : ""}` : b.inf ? "∞" : b.elo}${b.public ? "" : " · 🔒"}</span>
+        <div><b dir="auto">${esc(b.name)}</b> ${b.title ? `<span class="ttl">${esc(b.title)}</span>` : ""} <span class="muted small">${b.inf ? "∞ · " : b.kind === "ai" && b.elo ? b.elo + " · " : ""}${b.kind === "ai" ? `🧠 ${esc(b.model)}${b.illegal ? " 🤡" : ""}` : b.inf ? "" : b.elo}${b.public ? "" : " · 🔒"}</span>
           <div class="muted small">${t("x_record")}: ${b.wins}–${b.losses}–${b.draws} (${b.games})</div></div>
         ${c.owner ? `<div class="row-b"><button class="btn sm" data-bedit="${b.id}">✏️</button><button class="btn sm danger" data-bdel="${b.id}">🗑</button></div>` : ""}</div>`).join("")}</div></div></div>`;
   el.querySelector(".m-new").onclick = () => modelForm(null);
@@ -424,7 +424,7 @@ export async function bots(el, c) {
     const close = modal({ title: `🧪 ${t("x_test")}`, body: `<div class="spin center"></div><p class="muted center">${t("x_testing")}</p>`, buttons: [] });
     const x = await c.P("adm_ai_test", { id });
     close();
-    modal({ title: `🧪 ${t("x_test")}`, body: x.ok ? `<div class="small muted">⏱ ${x.ms} ms</div><div class="bs-label">${t("x_reply")}</div><pre class="ai-reply" dir="auto">${esc(x.reply)}</pre>
+    modal({ title: `🧪 ${t("x_test")}`, body: x.ok ? `<div class="small muted">⏱ ${x.ms} ms · 🪙 ${x.tokens || 0} tokens${x.thinker ? " · 🤔 thinking model" : ""}</div><div class="bs-label">${t("x_reply")}</div><pre class="ai-reply" dir="auto">${esc(x.reply)}</pre>
       <div class="bs-label">${t("x_move_read")}</div><b dir="ltr">${esc(x.move || "—")}</b>` : `<p class="bad" dir="ltr">⚠️ ${esc(x.error || "?")}</p><div class="small muted">⏱ ${x.ms || 0} ms</div>`,
     buttons: [{ label: "OK", cls: "primary", onClick: () => c.go("bots") }] });
   }
@@ -475,6 +475,8 @@ export async function bots(el, c) {
     const lines = (ev) => ((b && b.lines && b.lines[ev]) || []).map((x) => `${x[0]}${x[1] ? " | " + x[1] : ""}`).join("\n");
     const draw = () => {
       const ai = st.kind === "ai";
+      const rating = `<label class="ck"><input type="checkbox" class="f-inf" ${st.inf ? "checked" : ""}> ${ai ? "∞" : t("x_inf")}</label>
+          ${st.inf ? "" : `<label class="fl"><span>${t("x_elo")}: <b class="f-elo-v">${b ? b.raw_elo : 800}</b></span><input type="range" class="f-elo" min="0" max="3500" step="25" value="${b ? b.raw_elo : 800}"></label>`}`;
       box.innerHTML = `<div class="seg"><button data-kind="engine" class="${!ai ? "on" : ""}">♟ ${t("x_engine")}</button><button data-kind="ai" class="${ai ? "on" : ""}">🧠 ${t("x_ai")}</button></div>
         <div class="row-f"><label class="fl sm"><span>Emoji</span><input class="f-emoji" maxlength="8" value="${esc(b ? b.emoji : ai ? "🤡" : "🤖")}"></label>
           <label class="fl"><span>${t("x_name_en")}</span><input class="f-name" maxlength="30" value="${esc(b ? b.name_en : "")}"></label>
@@ -482,10 +484,10 @@ export async function bots(el, c) {
           ${color("f-color", t("a_color"), b ? b.color : "#607d8b")}</div>
         ${ai ? (r.models.length ? `<label class="fl"><span>🧠 ${t("x_model")}</span><select class="f-model">${r.models.map((m) => opt(m.id, `${m.name} · ${m.model}`, b ? b.model_id : "")).join("")}</select></label>
           <label class="ck"><input type="checkbox" class="f-illegal" ${!b || b.illegal ? "checked" : ""}> ${t("x_illegal")}</label>
-          <label class="fl"><span>${t("x_opener")}</span><input class="f-opener" maxlength="400" value="${esc(b ? b.opener : "")}" placeholder="Let's play chess."></label>`
+          <label class="fl"><span>${t("x_opener")}</span><input class="f-opener" maxlength="400" value="${esc(b ? b.opener : "")}" placeholder="Let's play chess."></label>
+          ${rating}`
           : `<p class="bad">${t("x_no_models")}</p>`) : `
-          <label class="ck"><input type="checkbox" class="f-inf" ${st.inf ? "checked" : ""}> ${t("x_inf")}</label>
-          ${st.inf ? "" : `<label class="fl"><span>${t("x_elo")}: <b class="f-elo-v">${b ? b.raw_elo : 800}</b></span><input type="range" class="f-elo" min="0" max="3500" step="25" value="${b ? b.raw_elo : 800}"></label>`}
+          ${rating}
           <div class="row-f"><label class="fl sm"><span>${t("x_blunder")}</span><input type="number" class="f-blunder" min="0" max="100" value="${b && b.style ? b.style.blunder || 0 : 0}"></label>
             <label class="fl sm"><span>${t("x_think")}</span><input type="number" class="f-think" step="0.1" min="0" max="10" value="${b && b.style && b.style.think ? b.style.think : ""}"></label></div>
           <label class="ck"><input type="checkbox" class="f-greedy" ${b && b.style && b.style.greedy ? "checked" : ""}> ${t("x_greedy")}</label>`}
@@ -584,4 +586,4 @@ export async function modes(el, c) {
   el.querySelectorAll("[data-act]").forEach((b) => b.onclick = async () => { if ((await c.P("adm_mode", { id: +b.dataset.id, action: b.dataset.act })).ok) c.go("modes"); });
 }
 
-export const V = "5bdc901d4f";
+export const V = "1c105c2606";
