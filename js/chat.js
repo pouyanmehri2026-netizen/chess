@@ -1,9 +1,9 @@
 // The community chat (#/chat) and the small chat box inside online games.
-import * as api from "./api.js?v=0a2a0f3abe";
-import { t, fa } from "./i18n.js?v=0a2a0f3abe";
-import { esc, toast, sleep, nameHtml, profileHref, store, confirmBox } from "./util.js?v=0a2a0f3abe";
-import { current, isStaff, loadMe } from "./session.js?v=0a2a0f3abe";
-import { play } from "./sound.js?v=0a2a0f3abe";
+import * as api from "./api.js?v=0c23cd7a0c";
+import { t, fa } from "./i18n.js?v=0c23cd7a0c";
+import { esc, toast, sleep, nameHtml, profileHref, store, confirmBox } from "./util.js?v=0c23cd7a0c";
+import { current, isStaff, loadMe } from "./session.js?v=0c23cd7a0c";
+import { play } from "./sound.js?v=0c23cd7a0c";
 
 const L = () => (fa() ? "fa" : "en");
 const hhmm = (ts) => { const d = new Date(ts * 1000); return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
@@ -115,11 +115,11 @@ export class GameChat {
     if (!fresh.length) return 0;
     if (this.list.querySelector(".gc-empty")) this.list.innerHTML = "";
     for (const m of fresh) {
-      this.list.insertAdjacentHTML("beforeend", `<div class="gcm c-${m.color}"><b><bdi>${esc(m.name)}</bdi>:</b> <bdi>${esc(m.text)}</bdi></div>`);
+      this.list.insertAdjacentHTML("beforeend", `<div class="gcm c-${esc(m.color)}${m.src ? " s-" + esc(m.src) : ""}"><b><bdi>${m.src === "ai" ? "🧠 " : ""}${esc(m.name)}</bdi>:</b> <bdi>${esc(m.text)}</bdi></div>`);
     }
     this.seen = msgs[msgs.length - 1].id;
     this.list.scrollTop = this.list.scrollHeight;
     return fresh.length;
   }
 }
-export const V = "0a2a0f3abe";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "0c23cd7a0c";  // the site version this file belongs to (main.js reloads the page after an update)

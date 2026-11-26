@@ -1,19 +1,29 @@
 // Log in / sign up (e-mail code, password, "log in with Bale", forgot password) and the Settings page
 // (board design, title & tag, showcase, bio, flag, account security, linking Bale).
-import * as api from "./api.js?v=0a2a0f3abe";
-import { t, fa } from "./i18n.js?v=0a2a0f3abe";
-import { store, esc, toast, sleep, titleHtml, tagHtml, nameHtml, confirmBox } from "./util.js?v=0a2a0f3abe";
-import { loadMe, setSession, logout, applyTheme, current } from "./session.js?v=0a2a0f3abe";
+import * as api from "./api.js?v=0c23cd7a0c";
+import { t, fa } from "./i18n.js?v=0c23cd7a0c";
+import { store, esc, toast, sleep, titleHtml, tagHtml, nameHtml, confirmBox } from "./util.js?v=0c23cd7a0c";
+import { loadMe, setSession, logout, applyTheme, current } from "./session.js?v=0c23cd7a0c";
 
 const L = () => (fa() ? "fa" : "en");
 const FLAGS = ["", "🇮🇷", "🇦🇫", "🇹🇯", "🇹🇷", "🇮🇶", "🇦🇪", "🇸🇦", "🇦🇿", "🇦🇲", "🇬🇪", "🇷🇺", "🇩🇪", "🇬🇧", "🇫🇷", "🇮🇹",
   "🇪🇸", "🇳🇱", "🇸🇪", "🇳🇴", "🇺🇸", "🇨🇦", "🇦🇺", "🇮🇳", "🇨🇳", "🇯🇵", "🇰🇷", "🇧🇷", "🇦🇷", "🇺🇦", "🇵🇰", "🇪🇬", "🏳️‍🌈", "🏴‍☠️"];
 
 let themesCache = null;
-export async function loadThemes() {
-  if (themesCache) return themesCache;
-  try { themesCache = await (await fetch(`data/themes.json?v=0a2a0f3abe`)).json(); } catch { themesCache = []; }
+export async function loadThemes(force = false) {
+  if (themesCache && !force) return themesCache;
+  try {  // live from the server: includes the Board Designer's newest boards
+    const { loadLiveThemes } = await import("./live.js?v=0c23cd7a0c");
+    const live = await loadLiveThemes(force);
+    if (live && live.length) { themesCache = live; return themesCache; }
+  } catch { /* offline */ }
+  try { themesCache = await (await fetch(`data/themes.json?v=0c23cd7a0c`)).json(); } catch { themesCache = []; }
   return themesCache;
+}
+
+// a little board preview with the design's colours, pattern and animation
+export function themePreview(th) {
+  return `<span class="th-prev" data-k="${esc(th.key)}" style="--light:${esc(th.light)};--dark:${esc(th.dark)}"></span>`;
 }
 
 function field(name, label, type = "text", extra = "") {
@@ -233,14 +243,26 @@ export async function renderSettings(view, nav, params) {
 
   function look(body) {
     const unlocked = new Set(me.themes || []);
+    const list = themes.filter((th) => !th.secret || unlocked.has(th.key));  // secret boards appear once you have them
+    const dots = store.get("dots") || "bold";
     body.innerHTML = `<div class="card"><h2>${t("board_design")}</h2><p class="muted small">${t("board_design_sub")}</p>
-      <div class="theme-grid">${themes.map((th) => {
+      <div class="theme-grid">${list.map((th) => {
         const ok = unlocked.has(th.key);
-        const sq = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((i) => `<i style="background:${(Math.floor(i / 4) + i) % 2 ? th.dark : th.light}"></i>`).join("");
-        return `<button class="th-card${me.theme === th.key ? " on" : ""}${ok ? "" : " lock"}${th.glow ? " glow" : ""}" data-k="${th.key}" style="--acc:${th.accent};--fr:${th.frame}">
-          <span class="th-mini">${sq}</span><span class="th-n">${esc(fa() ? th.fa : th.en)}</span>
+        return `<button class="th-card${me.theme === th.key ? " on" : ""}${ok ? "" : " lock"}${th.glow ? " glow" : ""}${th.custom ? " special" : ""}" data-k="${th.key}" style="--acc:${th.accent};--fr:${th.frame}">
+          <span class="th-mini">${themePreview(th)}</span><span class="th-n">${esc(fa() ? th.fa : th.en)}</span>
+          ${th.custom ? `<span class="th-tag sp">✨ ${t("custom_board")}</span>` : th.new ? `<span class="th-tag">${t("new_tag")}</span>` : ""}
           ${ok ? (me.theme === th.key ? `<span class="th-ok">✓</span>` : "") : `<span class="th-lock">🔒 ${esc(fa() ? th.unlock_fa : th.unlock_en)}</span>`}</button>`;
-      }).join("")}</div></div>`;
+      }).join("")}</div></div>
+      <div class="card"><h2>🎯 ${t("dots_style")}</h2><p class="muted small">${t("dots_sub")}</p>
+        <div class="dot-pick">${[["bold", t("dots_bold")], ["ring", t("dots_ring")], ["glow", t("dots_glow")], ["big", t("dots_big")], ["classic", t("dots_classic")]]
+          .map(([k, l]) => `<button class="dp${dots === k ? " on" : ""}" data-dots="${k}"><span class="dp-demo" data-demo="${k}"><i class="l"><b></b></i><i class="d"><b></b></i><i class="d cap"><b></b></i><i class="l cap"><b></b></i></span><span>${l}</span></button>`).join("")}</div>
+        <label class="ck"><input type="checkbox" class="fx-on" ${store.get("fx") !== false ? "checked" : ""}> ${t("fx_toggle")}</label></div>`;
+    body.querySelectorAll("[data-dots]").forEach((b) => b.onclick = async () => {
+      const { setDots } = await import("./live.js?v=0c23cd7a0c");
+      setDots(b.dataset.dots);
+      body.querySelectorAll("[data-dots]").forEach((x) => x.classList.toggle("on", x === b));
+    });
+    body.querySelector(".fx-on").onchange = async (e) => { const { setFx } = await import("./live.js?v=0c23cd7a0c"); setFx(e.target.checked); };
     body.querySelectorAll(".th-card").forEach((b) => b.onclick = async () => {
       const k = b.dataset.k;
       const th = themes.find((x) => x.key === k);
@@ -294,7 +316,7 @@ export async function renderSettings(view, nav, params) {
     body.querySelectorAll("[data-fl]").forEach((b) => b.onclick = () => { flag = b.dataset.fl; body.querySelectorAll("[data-fl]").forEach((x) => x.classList.toggle("on", x === b)); });
     body.querySelector(".save-prof").onclick = async () => { if (await save({ bio: body.querySelector(".bio-in").value, flag })) { me.flag = flag; prev(); } };
     // showcase: the player's achievements
-    import("./profile.js?v=0a2a0f3abe").then(async ({ achList }) => {
+    import("./profile.js?v=0c23cd7a0c").then(async ({ achList }) => {
       const all = await achList();
       const have = all.list.filter((x) => (me.ach_codes || []).includes(x.code));
       const grid = body.querySelector(".sc-grid");
@@ -379,4 +401,4 @@ const COLORS = { SGM: "#f5b700", GM: "#c0392b", IM: "#d35400", WGM: "#c2185b", F
 export const titleColor = (c) => COLORS[c] || "#7c2929";
 export function bestTitle(codes) { return PRESTIGE.find((c) => (codes || []).includes(c)) || null; }
 export { current };
-export const V = "0a2a0f3abe";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "0c23cd7a0c";  // the site version this file belongs to (main.js reloads the page after an update)

@@ -1,9 +1,9 @@
 // The admin panel (#/admin): dashboard, players, titles & tags, fair play, reports, chat, games,
 // broadcast, settings and the log. Only for accounts with a role (owner / admin / mod).
-import * as api from "./api.js?v=0a2a0f3abe";
-import { t, fa, extend } from "./i18n.js?v=0a2a0f3abe";
-import { esc, toast, store, modal, confirmBox, titleHtml, tagHtml, nameHtml, timeAgo, dateText, profileHref } from "./util.js?v=0a2a0f3abe";
-import { loadMe, isStaff } from "./session.js?v=0a2a0f3abe";
+import * as api from "./api.js?v=0c23cd7a0c";
+import { t, fa, extend } from "./i18n.js?v=0c23cd7a0c";
+import { esc, toast, store, modal, confirmBox, titleHtml, tagHtml, nameHtml, timeAgo, dateText, profileHref } from "./util.js?v=0c23cd7a0c";
+import { loadMe, isStaff } from "./session.js?v=0c23cd7a0c";
 
 extend({
   a_dash: ["Dashboard", "داشبورد"], a_players: ["Players", "بازیکنان"], a_tags: ["Titles & tags", "عنوان و تگ"],
@@ -67,17 +67,24 @@ export async function renderAdmin(view, nav, params) {
   }
   const owner = me.role === "owner", admin = owner || me.role === "admin";
   let tab = params.tab || store.get("admTab") || "dash";
-  const tabs = [["dash", "📊"], ["players", "👥"], ["tags", "🏷️"], ["fair", "⚖️"], ["reports", "⚑"], ["chat", "💬"], ["games", "♟"],
+  const X = await import("./adminx.js?v=0c23cd7a0c");
+  const tabs = [["dash", "📊"], ["players", "👥"], ...(admin ? [["events", "🎉"], ["badges", "🏅"], ["boards", "🎨"], ["bots", "🤖"], ["giveall", "🎁"]] : []),
+    ["tags", "🏷️"], ["modes", "🎲"], ["fair", "⚖️"], ["reports", "⚑"], ["chat", "💬"], ["games", "♟"],
     ...(owner ? [["broadcast", "📣"]] : []), ...(admin ? [["settings", "⚙️"], ["log", "📜"]] : [])];
   view.innerHTML = `<div class="page adm-page"><div class="adm-head"><h1>🛠 ${t("a_title")}</h1><span class="role r-${me.role}">${t("role_" + me.role)}</span></div>
     <div class="adm-tabs">${tabs.map(([k, i]) => `<button data-t="${k}">${i} <span>${t("a_" + (k === "dash" ? "dash" : k))}</span></button>`).join("")}</div>
     <div class="adm-body"></div></div>`;
   const body = view.querySelector(".adm-body");
-  const go = (k) => {
+  // the new tabs live in adminx.js; they get what they need from here
+  const ctx = { A, P, owner, admin, pickPlayer: (cb) => pickPlayer(cb), go: (k, extra) => go(k, extra) };
+  const xtab = (name) => (el, extra) => X[name](el, ctx, extra);
+  const go = (k, extra) => {
     tab = k; store.set("admTab", k);
     view.querySelectorAll("[data-t]").forEach((b) => b.classList.toggle("on", b.dataset.t === k));
     body.innerHTML = `<div class="spin center"></div>`;
-    ({ dash, players, tags, fair, reports, chat, games, broadcast, settings, log }[k] || dash)(body).catch((e) => { console.error(e); body.innerHTML = `<div class="card">${t("offline")}</div>`; });
+    ({ dash, players, tags, fair, reports, chat, games, broadcast, settings, log, events: xtab("events"), badges: xtab("badges"),
+      boards: xtab("boards"), bots: xtab("bots"), giveall: xtab("giveall"), modes: xtab("modes") }[k] || dash)(body, extra)
+      .catch((e) => { console.error(e); body.innerHTML = `<div class="card">${t("offline")}</div>`; });
   };
   view.querySelectorAll("[data-t]").forEach((b) => b.onclick = () => go(b.dataset.t));
 
@@ -114,9 +121,15 @@ export async function renderAdmin(view, nav, params) {
 
   function liveList(live) {
     if (!live.length) return `<div class="muted small">${t("a_nobody")}</div>`;
-    return `<div class="glist">${live.map((g) => `<div class="grow"><span class="gi">●</span><span class="go" dir="auto">${esc(g.white)} – ${esc(g.black)}</span>
+    return `<div class="glist">${live.map((g) => `<div class="grow wrap"><span class="gi">●</span><span class="go" dir="auto">${esc(g.mode || "")} ${esc(g.white)} – ${esc(g.black)}</span>
       <span class="gt">${esc(g.tc)}${g.rated ? " ★" : ""} · ${Math.ceil(g.plies / 2)}</span>
-      <a class="btn sm" href="#/game/${esc(g.t)}" target="_blank">${t("a_watch")}</a>${admin ? `<button class="btn sm danger" data-abort="${g.gid}">${t("a_abort")}</button>` : ""}</div>`).join("")}</div>`;
+      <a class="btn sm" href="#/game/${esc(g.t)}" target="_blank">${t("a_watch")}</a>
+      ${admin ? `${g.clock ? `<button class="btn sm" data-lv="time" data-g="${g.gid}" title="+30s">⏱+30</button>` : ""}
+        <button class="btn sm" data-lv="say" data-g="${g.gid}" title="${t("x_live_say")}">📢</button>` : ""}
+      ${owner ? `<button class="btn sm" data-lv="draw" data-g="${g.gid}" title="½">½</button><button class="btn sm" data-lv="white" data-g="${g.gid}" title="1-0">1-0</button>
+        <button class="btn sm" data-lv="black" data-g="${g.gid}" title="0-1">0-1</button>` : ""}
+      ${admin ? `<button class="btn sm danger" data-abort="${g.gid}">${t("a_abort")}</button>` : ""}</div>`).join("")}</div>
+      ${admin ? `<button class="btn sm ghost lobby-clear">🧹 ${t("x_lobby_clear")}</button>` : ""}`;
   }
   function wireLive(el) {
     el.querySelectorAll("[data-abort]").forEach((b) => b.onclick = async () => {
@@ -124,6 +137,18 @@ export async function renderAdmin(view, nav, params) {
       const r = await P("adm_abort", { gid: +b.dataset.abort });
       if (r.ok) { toast("✓", "good"); go(tab); }
     });
+    // the owner's powers over a live game: more time, a message in its chat, end it as a draw or a win
+    el.querySelectorAll("[data-lv]").forEach((b) => b.onclick = async () => {
+      const act = b.dataset.lv, gid = +b.dataset.g;
+      let extra = {};
+      if (act === "say") { const text = prompt("📢"); if (!text) return; extra = { text }; }
+      if (act === "time") extra = { seconds: 30 };
+      if (["draw", "white", "black"].includes(act) && !(await confirmBox(`${b.title}?`, b.title, t("cancel")))) return;
+      const r = await P("adm_live", { gid, action: act, ...extra });
+      if (r.ok) toast("✓", "good");
+    });
+    const lc = el.querySelector(".lobby-clear");
+    if (lc) lc.onclick = async () => { const r = await P("adm_lobby_clear"); if (r.ok) toast(`🧹 ${r.cleared}`, "good"); };
   }
 
   // ───────── players ─────────
@@ -176,7 +201,7 @@ export async function renderAdmin(view, nav, params) {
       ${owner ? `<div class="pd-sec"><h3>👤 ${t("a_role")}</h3><div class="seg roles">${["user", "mod", "admin"].map((x) => `<button data-role="${x}" class="${p.role === x ? "on" : ""}">${x}</button>`).join("")}</div></div>
         <div class="pd-sec"><h3>🎖 ${t("a_give_title")}</h3><div class="chips">${titles.map((x) => `<button class="chip ${r.titles.includes(x.code) ? "on" : ""}" data-title="${x.code}">${titleHtml(x.code, x.color)}</button>`).join("")}</div></div>
         <div class="pd-sec"><h3>🏷 ${t("a_give_tag")}</h3><div class="chips">${tagsInfo.tags.map((x) => `<button class="chip ${r.tags.some((y) => y.id === x.id) ? "on" : ""}" data-tag="${x.id}">${tagHtml(x)}</button>`).join("") || "—"}</div></div>
-        <div class="pd-sec"><h3>🎨 ${t("a_give_theme")}</h3><div class="row-f"><select class="th-sel">${tagsInfo.themes.map((x) => `<option value="${x.key}">${esc(x.name)}${r.themes.includes(x.key) ? " ✓" : ""}</option>`).join("")}</select><button class="btn sm do-theme">${t("a_give")}</button></div></div>
+        <div class="pd-sec"><h3>🎨 ${t("a_give_theme")}</h3><div class="row-f"><select class="th-sel">${tagsInfo.themes.map((x) => `<option value="${x.key}">${esc(x.name)}${r.themes.includes(x.key) ? " ✓" : ""}</option>`).join("")}</select><button class="btn sm do-theme">${t("a_give")}</button><button class="btn sm ghost do-theme-take">${t("a_take")}</button></div></div>
         <div class="pd-sec"><h3>🏅 ${t("a_give_ach")}</h3><div class="row-f"><select class="ach-sel">${tagsInfo.achievements.map((x) => `<option value="${x.code}">${esc(x.emoji)} ${esc(x.name)}${r.achievements.includes(x.code) ? " ✓" : ""}</option>`).join("")}</select>
           <button class="btn sm do-ach" data-g="1">${t("a_give")}</button><button class="btn sm ghost do-ach" data-g="0">${t("a_take")}</button></div></div>` : ""}
       ${admin && p.bale ? `<div class="pd-sec"><h3>📣 ${t("a_message")}</h3><div class="row-f"><input class="msg-in" dir="auto"><button class="btn sm do-msg">${t("a_send")}</button></div></div>` : ""}
@@ -199,6 +224,7 @@ export async function renderAdmin(view, nav, params) {
     box.querySelectorAll("[data-title]").forEach((b) => b.onclick = async () => { const give = !b.classList.contains("on"); if ((await P("adm_title", { pid, code: b.dataset.title, give })).ok) b.classList.toggle("on", give); });
     box.querySelectorAll("[data-tag]").forEach((b) => b.onclick = async () => { const give = !b.classList.contains("on"); if ((await P("adm_tag_give", { pid, tag: +b.dataset.tag, give })).ok) b.classList.toggle("on", give); });
     q(".do-theme") && (q(".do-theme").onclick = async () => { if ((await P("adm_theme", { pid, theme: q(".th-sel").value })).ok) toast("🎨 ✓", "good"); });
+    q(".do-theme-take") && (q(".do-theme-take").onclick = async () => { if ((await P("adm_theme_take", { pid, theme: q(".th-sel").value })).ok) toast("🎨 ↩", "good"); });
     box.querySelectorAll(".do-ach").forEach((b) => b.onclick = async () => { if ((await P("adm_achievement", { pid, code: q(".ach-sel").value, give: b.dataset.g === "1" })).ok) toast("🏅 ✓", "good"); });
     q(".do-msg") && (q(".do-msg").onclick = async () => { const x = await P("adm_message", { pid, text: q(".msg-in").value }); if (x.ok) { toast("✓", "good"); q(".msg-in").value = ""; } });
     q(".do-delacc") && (q(".do-delacc").onclick = async () => { if (await confirmBox(t("a_delete_acc") + "?", t("a_delete_acc"), t("cancel"))) { if ((await P("adm_delete_account", { pid })).ok) reopen(); } });
@@ -393,4 +419,4 @@ export async function renderAdmin(view, nav, params) {
   go(tab);
   return { destroy() {} };
 }
-export const V = "0a2a0f3abe";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "0c23cd7a0c";  // the site version this file belongs to (main.js reloads the page after an update)

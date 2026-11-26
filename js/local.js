@@ -1,12 +1,12 @@
 // Games against the bots. Everything runs in the browser (Stockfish 19 in a Web Worker),
 // so the bots answer instantly and keep working even when the game server is offline.
-import { Chess } from "./vendor/chess.js?v=0a2a0f3abe";
-import { GameView, START_FEN } from "./gameview.js?v=0a2a0f3abe";
-import { getEngine } from "./engine.js?v=0a2a0f3abe";
-import { t, fa } from "./i18n.js?v=0a2a0f3abe";
-import { store, toast, confirmBox, initials, sleep, esc } from "./util.js?v=0a2a0f3abe";
-import { play } from "./sound.js?v=0a2a0f3abe";
-import * as api from "./api.js?v=0a2a0f3abe";
+import { Chess } from "./vendor/chess.js?v=0c23cd7a0c";
+import { GameView, START_FEN } from "./gameview.js?v=0c23cd7a0c";
+import { getEngine } from "./engine.js?v=0c23cd7a0c";
+import { t, fa } from "./i18n.js?v=0c23cd7a0c";
+import { store, toast, confirmBox, initials, sleep, esc } from "./util.js?v=0c23cd7a0c";
+import { play } from "./sound.js?v=0c23cd7a0c";
+import * as api from "./api.js?v=0c23cd7a0c";
 
 // How each bot chooses its moves (levels match the Bale bot: club 1–11, Stockfish 21–28).
 const PLAY = {
@@ -24,7 +24,7 @@ const PLAY = {
 
 let BOTS = null;
 export async function loadBots() {
-  if (!BOTS) BOTS = await (await fetch("data/bots.json?v=0a2a0f3abe")).json();
+  if (!BOTS) BOTS = await (await fetch("data/bots.json?v=0c23cd7a0c")).json();
   return BOTS;
 }
 export function botName(b) { return (b.title ? b.title + " " : "") + (fa() ? b.name_fa : b.name); }
@@ -85,6 +85,7 @@ export class LocalGame {
       id: settings.id || Date.now(), level: settings.level, color: settings.color === "r" ? (Math.random() < 0.5 ? "w" : "b") : settings.color,
       tc: settings.tc || null, moves: [], hints: 3, assisted: false, over: null, reported: false,
       clocks: settings.tc ? { w: settings.tc[0] * 60, b: settings.tc[0] * 60 } : null, turnAt: null,
+      fen: settings.fen || null,  // a custom start position (Position Editor)
     };
     if (saved && !saved.over) this.s.turnAt = Date.now();  // the clock doesn't run while the page was closed
     this.alive = true;
@@ -94,8 +95,9 @@ export class LocalGame {
   async start() {
     const bots = await loadBots();
     this.bot = bots.find((b) => b.level === this.s.level) || bots[0];
-    this.chess = new Chess();
-    const fens = [START_FEN], sans = [], ucis = [];
+    const start = this.s.fen || START_FEN;
+    try { this.chess = new Chess(start); } catch { this.s.fen = null; this.chess = new Chess(); }
+    const fens = [this.chess.fen()], sans = [], ucis = [];
     for (const u of this.s.moves) {
       const m = uciMove(this.chess, u);
       fens.push(this.chess.fen()); sans.push(m.san); ucis.push(u);
@@ -103,7 +105,7 @@ export class LocalGame {
     const me = this.s.color, botColor = me === "w" ? "b" : "w";
     const myName = store.get("me")?.name || t("you");
     this.view = new GameView(this.root, {
-      mode: "local", orient: me, me,
+      mode: "local", orient: me, me, startFen: fens[0],
       onMove: (f, to, p, meta) => this.userMove(f, to, p, meta),
       onBack: () => this.nav("#/bots"),
       onFlag: (c) => this.flag(c),
@@ -283,8 +285,8 @@ export class LocalGame {
   }
 
   rebuild() {
-    const c = new Chess();
-    const fens = [START_FEN], sans = [];
+    const c = new Chess(this.s.fen || START_FEN);
+    const fens = [c.fen()], sans = [];
     for (const u of this.s.moves) { const m = uciMove(c, u); fens.push(c.fen()); sans.push(m.san); }
     this.view.setHistory(fens, sans, this.s.moves.slice(), { sound: false, animate: true });
   }
@@ -349,7 +351,7 @@ export class LocalGame {
     try {
       const r = await api.post("bot_result", { t: u, level: this.s.level, color: this.s.color, moves: this.s.moves,
         result: this.s.over.result, reason: this.s.over.reason, tc: this.s.tc ? `${this.s.tc[0]}+${this.s.tc[1]}` : "none",
-        assisted: this.s.assisted });
+        assisted: this.s.assisted, fen: this.s.fen || "" });
       if (r && r.ok) {
         this.s.reported = true;
         this.s.review = r.review || null;
@@ -360,16 +362,18 @@ export class LocalGame {
   }
 
   openReview() {
-    store.set("lastLocal", { moves: this.s.moves, color: this.s.color, level: this.s.level, over: this.s.over, tc: this.s.tc });
+    store.set("lastLocal", { moves: this.s.moves, color: this.s.color, level: this.s.level, over: this.s.over, tc: this.s.tc,
+      fen: this.s.fen || null });
     if (this.s.review) this.nav(`#/review/${this.s.review}`);
     else this.nav("#/lreview");
   }
 
   rematch() {
     store.del("botgame");
-    this.nav(`#/bot?level=${this.s.level}&color=${this.s.color}&tc=${this.s.tc ? this.s.tc.join("+") : "none"}&new=${Date.now()}`);
+    this.nav(`#/bot?level=${this.s.level}&color=${this.s.color}&tc=${this.s.tc ? this.s.tc.join("+") : "none"}&new=${Date.now()}` +
+      (this.s.fen ? `&fen=${encodeURIComponent(this.s.fen)}` : ""));
   }
 
   destroy() { this.alive = false; if (this.view) this.view.destroy(); }
 }
-export const V = "0a2a0f3abe";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "0c23cd7a0c";  // the site version this file belongs to (main.js reloads the page after an update)

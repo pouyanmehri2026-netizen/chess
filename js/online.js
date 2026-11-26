@@ -1,20 +1,26 @@
 // Online games (play or watch) against people, through the Chess bot's game server,
 // and the Game Review page (server review for saved games, in-browser review for bot games).
-import { Chess } from "./vendor/chess.js?v=0a2a0f3abe";
-import { GameView, START_FEN, pieceSan } from "./gameview.js?v=0a2a0f3abe";
-import { t, fa } from "./i18n.js?v=0a2a0f3abe";
-import { store, toast, confirmBox, sleep, esc } from "./util.js?v=0a2a0f3abe";
-import { play } from "./sound.js?v=0a2a0f3abe";
-import * as api from "./api.js?v=0a2a0f3abe";
-import { reviewGame, openingName } from "./reviewer.js?v=0a2a0f3abe";
-import { loadBots, botName } from "./local.js?v=0a2a0f3abe";
-import { GameChat } from "./chat.js?v=0a2a0f3abe";
+import { Chess } from "./vendor/chess.js?v=0c23cd7a0c";
+import { GameView, START_FEN, pieceSan, plainFen, WILD_ICON, lastSquares } from "./gameview.js?v=0c23cd7a0c";
+import { t, fa } from "./i18n.js?v=0c23cd7a0c";
+import { store, toast, confirmBox, sleep, esc } from "./util.js?v=0c23cd7a0c";
+import { play } from "./sound.js?v=0c23cd7a0c";
+import * as api from "./api.js?v=0c23cd7a0c";
+import { reviewGame, openingName } from "./reviewer.js?v=0c23cd7a0c";
+import { loadBots, botName } from "./local.js?v=0c23cd7a0c";
+import { GameChat } from "./chat.js?v=0c23cd7a0c";
 
 const CLIENT = store.get("client") || (() => { const c = Math.random().toString(36).slice(2, 12); store.set("client", c); return c; })();
 
+// can chess.js follow this game in the browser (optimistic moves, premoves)? Only normal rules.
+function simpleRules(st) {
+  const m = st && st.mode;
+  return !m || (m.core === "classic" && !m.fog && !m.double && !m.wild);
+}
+
 function premoveDests(fen, color) {
   try {
-    const parts = fen.split(" ");
+    const parts = plainFen(fen).split(" ");
     parts[1] = color;
     parts[3] = "-";
     const c = new Chess(parts.join(" "), { skipValidation: true });
@@ -102,26 +108,43 @@ export class OnlineGame {
       this.view.setOrientation(me || "w");
       this.view.setPlayers(st.players);
       const live = this.watch ? `<span class="live-pill">● ${t("live")}</span>` : "";
-      this.view.setTitle(`${esc(st.tc || "")}${st.rated ? ` · <span class="muted">${fa() ? "رسمی" : "Rated"}</span>` : ""}`, live);
+      const ai = st.ai ? ` · <span class="ai-pill">🧠 ${esc(st.ai.model || "AI")}</span>` : "";
+      this.view.setTitle(`${esc(st.tc || "")}${st.rated ? ` · <span class="muted">${fa() ? "رسمی" : "Rated"}</span>` : ""}${ai}`, live);
+      this.view.setMode(st.mode);
+      this.view.noCaps = !!(st.mode && (st.mode.fog || st.mode.core === "crazyhouse"));
       if (!st.over && me) play("start");
-      if (st.chat && !st.vs_bot) this.view.enableChat(GameChat, { onSend: (x) => this.sendChat(x), canChat: !!st.can_chat });
+      // chat with people — and with an AI bot (it reads what you write with your next move)
+      if (st.chat && (!st.vs_bot || st.ai)) this.view.enableChat(GameChat, { onSend: (x) => this.sendChat(x), canChat: !!st.can_chat });
     }
     if (st.chat) this.view.setChat(st.chat);
     this.v = st.v;
     const ucis = st.ucis || [];
+    this.view.liveCheck = st.check || null;
+    this.view.fogLive = st.fog ? st.fog : null;
+    if (st.marks) this.view.wildMarks = st.marks;
+    const before = this.view.hist.sans.length;
     this.view.setHistory(st.fens || [st.fen], st.sans || [], ucis, { sound: true, animate: true });
+    this.effects(st, before);
     const myTurn = me && !st.over && st.ready && st.turn === me;
+    const drops = new Map();
     if (myTurn) {
       const dests = new Map();
       for (const u of st.legal || []) {
+        if (u[1] === "@") {  // crazyhouse: put a captured piece back
+          if (!drops.has(u[0])) drops.set(u[0], []);
+          drops.get(u[0]).push(u.slice(2, 4));
+          continue;
+        }
         const f = u.slice(0, 2), to = u.slice(2, 4);
         if (!dests.has(f)) dests.set(f, []);
         if (!dests.get(f).includes(to)) dests.get(f).push(to);
       }
       this.view.setMovable({ color: me, dests });
-    } else if (me && !st.over && st.ready) {
+    } else if (me && !st.over && st.ready && simpleRules(st)) {
       this.view.setMovable(null, { color: me, dests: premoveDests(st.fen, me) });
     } else this.view.setMovable(null);
+    this.view.setChecks(st.checks || null, st.mode ? st.mode.checks : 0);
+    this.view.setPockets(st.pockets || null, myTurn ? me : null, myTurn ? drops : null);
     this.view.setClock(st.clocks ? { w: st.clocks.w, b: st.clocks.b, running: st.clock_running ? st.turn : null } : null);
     if (st.bubble && st.bubble.id !== this.seen.bubble) {
       this.seen.bubble = st.bubble.id;
@@ -140,9 +163,21 @@ export class OnlineGame {
     if (myTurn) this.tryPremove();
   }
 
+  // explosions, illegal AI moves, the second move of a Double Move turn
+  effects(st, before) {
+    const n = (st.sans || []).length;
+    if (n <= before || !this.view.isLive()) return;
+    const sq = (lastSquares((st.ucis || [])[n - 1]) || []).slice(-1)[0];
+    if (st.boom && st.boom.ply === n) this.view.board.flash(st.boom.sq, "💥", "boom");
+    const mark = st.marks && st.marks[n - 1];
+    if (mark && sq) { this.view.board.flash(sq, WILD_ICON[mark] || "🚫", "wild"); play("bad"); }
+  }
+
   renderStatus(st, me, myTurn) {
     let s = "", kind = "";
     if (st.over) s = esc(st.subtitle || "");
+    else if (st.ai && st.ai.thinking && st.turn !== me) s = `<span class="dots">🧠 ${esc(st.ai.model || "AI")} ${t("ai_thinking")}</span>`;
+    else if (st.double && st.double.second && myTurn) { s = `⚡ ${t("double_second")}`; kind = "hl"; }
     else if (!st.ready) s = `<span class="dots">${t(this.watch || !me ? "waiting_players" : "waiting_join")}</span>`;
     else if (st.draw_offer && me && st.draw_offer !== me) { s = t("opp_offers_draw"); kind = "hl"; }
     else if (st.abort_in != null && myTurn) s = t("abort_in", { s: st.abort_in });
@@ -150,6 +185,8 @@ export class OnlineGame {
     else if (this.watch) s = `👁 ${t("watching_n", { n: st.watchers || 0 })}`;
     else if (me) s = myTurn ? t("your_turn") : t("their_turn");
     if (st.opening && !st.over) s += `<div class="op">📖 ${esc(st.opening)}</div>`;
+    if (st.ai && st.ai.wild) s += `<div class="op">🤡 ${t("ai_illegal_n", { n: st.ai.illegal || 0 })}</div>`;
+    if (st.ai && st.ai.error) s += `<div class="op bad">⚠️ ${esc(st.ai.error)}</div>`;
     this.view.status(s, kind);
   }
 
@@ -240,18 +277,21 @@ export class OnlineGame {
     const st = this.st;
     if (!st || !this.me || st.over || st.turn !== this.me) return;
     let uci = from + to + (promo || "");
+    if (from === "@" && meta && meta.drop) uci = meta.drop[1] + "@" + to;  // a pocket piece dropped on a square
     if (!(st.legal || []).includes(uci)) {
-      const alt = (st.legal || []).find((u) => u.startsWith(from + to));
+      const alt = from !== "@" && (st.legal || []).find((u) => u.startsWith(from + to));
       if (!alt) { this.view.show(false); return; }
       uci = alt.length === 5 && !promo ? from + to + "q" : alt;
     }
     let optimistic = false;
-    try {  // show the move at once; the server confirms a moment later
-      const c = new Chess(st.fen);
-      const m = c.move({ from, to, promotion: uci[4] || undefined });
-      this.view.pushMove(c.fen(), m.san, uci, { animate: !(meta && meta.drag) });
-      optimistic = true;
-    } catch { /* Chess960 castling etc.: wait for the server */ }
+    if (simpleRules(st) && from !== "@") {
+      try {  // show the move at once; the server confirms a moment later
+        const c = new Chess(plainFen(st.fen));
+        const m = c.move({ from, to, promotion: uci[4] || undefined });
+        this.view.pushMove(c.fen(), m.san, uci, { animate: !(meta && meta.drag) });
+        optimistic = true;
+      } catch { /* Chess960 castling etc.: wait for the server */ }
+    }
     this.view.setMovable(null, { color: this.me, dests: new Map() });
     try {
       const r = await api.post("move", { t: this.token, uci, l: fa() ? "fa" : "en" });
@@ -317,6 +357,7 @@ export class ReviewPage {
       const r = await api.get("review", { t: this.token, l: fa() ? "fa" : "en" }, 20000);
       if (r.error) throw new Error(r.error);
       if (r.status === "done") { this.show(r.review, r.state.players, r.state.me, r.state); return; }
+      if (r.status === "replay") { this.replay(r.state); return; }  // game modes / AI games: move by move, no engine
       this.progress(r.progress || 0);
       await sleep(900);
     }
@@ -331,7 +372,7 @@ export class ReviewPage {
     const botColor = g.color === "w" ? "b" : "w";
     players[g.color] = { name: me?.name || t("you"), elo: me?.elo || "" };
     players[botColor] = { name: botName(bot), elo: bot.elo, bot: true, color: bot.color, initials: bot.initials, title: bot.title };
-    const rv = await reviewGame(START_FEN, g.moves, (p) => this.alive && this.progress(p));
+    const rv = await reviewGame(g.fen || START_FEN, g.moves, (p) => this.alive && this.progress(p));
     if (!this.alive) return;
     this.show(rv, players, g.color, { title: g.over ? (g.over.winner === null ? t("draw_title") : g.over.winner === g.color ? t("you_won") : t("you_lost")) : "", subtitle: g.over ? t("by", { reason: t("r_" + g.over.reason) }) : "" });
   }
@@ -353,6 +394,40 @@ export class ReviewPage {
       { id: "key", label: t("key_moment"), icon: "!", onClick: () => this.view.nextKey() },
       { id: "pgn", label: t("pgn"), icon: "⧉", onClick: () => this.copyPgn(players, sans) },
     ]);
+  }
+
+  // a saved game that Stockfish can't review (a game mode, an AI game with illegal moves): just the moves
+  replay(st) {
+    const fens = st.fens || [st.fen || START_FEN], sans = st.sans || [], ucis = st.ucis || [];
+    this.view.setPlayers(st.players);
+    this.view.setOrientation(st.me || "w");
+    this.view.setMode(st.mode);
+    this.view.noCaps = !!(st.mode && st.mode.core === "crazyhouse");
+    if (st.marks) this.view.wildMarks = st.marks;
+    this.view.setTitle(`▶ ${t("replay")}${st.mode && !st.mode.standard ? ` <span class="muted">· ${esc(st.mode.emoji)} ${esc(st.mode.name)}</span>` : ""}`);
+    this.view.setHistory(fens, sans, ucis, { sound: false, animate: false });
+    this.view.go(0);
+    this.view.status(`${st.title ? `<b>${esc(st.title)}</b> ` : ""}${esc(st.subtitle || "")}<div class="op muted">${t(st.mode && st.mode.wild ? "replay_note_wild" : "replay_note")}</div>`);
+    this.replayActs = () => this.view.setActions([
+      this.playing ? { id: "start", label: t("replay_pause"), icon: "⏸", cls: "primary", onClick: () => this.autoplay() }
+        : { id: "start", label: t("replay_play"), icon: "▶", cls: "primary", onClick: () => this.autoplay() },
+      { id: "pgn", label: t("pgn"), icon: "⧉", onClick: () => this.copyPgn(st.players, sans) },
+    ]);
+    this.replayActs();
+  }
+
+  async autoplay() {
+    if (this.playing) { this.playing = false; this.replayActs(); return; }
+    this.playing = true;
+    this.replayActs();
+    if (this.view.ply >= this.view.hist.fens.length - 1) this.view.go(0);
+    while (this.alive && this.playing && this.view.ply < this.view.hist.fens.length - 1) {
+      await sleep(this.view.ply ? 900 : 300);
+      if (!this.alive || !this.playing) break;
+      this.view.go(this.view.ply + 1, true);
+    }
+    this.playing = false;
+    if (this.alive) this.replayActs();
   }
 
   copyPgn(players, sans) {
@@ -401,4 +476,4 @@ export class ReviewPage {
 }
 
 export { pieceSan };
-export const V = "0a2a0f3abe";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "0c23cd7a0c";  // the site version this file belongs to (main.js reloads the page after an update)

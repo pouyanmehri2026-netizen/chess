@@ -1,10 +1,11 @@
 // The game screen shared by online games, bot games, spectating and Game Review:
 // player bars + clocks, the locked board, move list / history browsing, review panel, end-of-game card.
-import { Board, sqXY } from "./board.js?v=0a2a0f3abe";
-import { Chess } from "./vendor/chess.js?v=0a2a0f3abe";
-import { t, fa } from "./i18n.js?v=0a2a0f3abe";
-import { esc, fmtClock, h, initials, winPct, evalText, store, titleHtml, tagHtml, showHtml, nameHtml, profileHref } from "./util.js?v=0a2a0f3abe";
-import { play, playMove, soundOn, setSound } from "./sound.js?v=0a2a0f3abe";
+import { Board, sqXY } from "./board.js?v=0c23cd7a0c";
+import { Chess } from "./vendor/chess.js?v=0c23cd7a0c";
+import { t, fa } from "./i18n.js?v=0c23cd7a0c";
+import { esc, fmtClock, h, initials, winPct, evalText, store, titleHtml, tagHtml, showHtml, nameHtml, profileHref, modal } from "./util.js?v=0c23cd7a0c";
+import "./i18n3.js?v=0c23cd7a0c";
+import { play, playMove, soundOn, setSound } from "./sound.js?v=0c23cd7a0c";
 
 export const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -41,9 +42,16 @@ export function badgeHtml(cls, size = "") {
   return c ? `<span class="cico ${size}" style="background:${c.color}">${c.icon}</span>` : "";
 }
 
+// a FEN chess.js can read: no crazyhouse pockets [..] or promoted marks ~
+export function plainFen(fen) {
+  const p = String(fen || "").split(" ");
+  p[0] = (p[0] || "").replace(/\[.*$/, "").replace(/~/g, "");
+  return p.join(" ");
+}
+
 function fenInfo(fen) {
   try {
-    const c = new Chess(fen);
+    const c = new Chess(plainFen(fen));
     let check = null;
     if (c.inCheck()) {
       const turn = c.turn();
@@ -55,7 +63,7 @@ function fenInfo(fen) {
 
 function material(fen) {
   const counts = { w: { q: 0, r: 0, b: 0, n: 0, p: 0 }, b: { q: 0, r: 0, b: 0, n: 0, p: 0 } };
-  for (const ch of fen.split(" ")[0]) {
+  for (const ch of String(fen || "").split(" ")[0].replace(/\[.*$/, "")) {
     const l = ch.toLowerCase();
     if (counts.w[l] === undefined) continue;
     counts[ch === l ? "b" : "w"][l]++;
@@ -117,6 +125,7 @@ export class GameView {
   </div>
   <aside class="gv-side">
     <div class="gs-head"></div>
+    <div class="gs-mode" hidden></div>
     <div class="gs-review" hidden></div>
     <div class="gs-coach" hidden></div>
     <div class="gs-moves"><div class="ml"></div></div>
@@ -267,27 +276,33 @@ export class GameView {
       const el = this.$(`.pbar[data-pos="${pos}"]`);
       el.dataset.color = color;
       const av = p.bot
-        ? `<div class="av bot" style="background:${esc(p.color || "#4a4846")}">${esc(p.initials || initials(p.name))}</div>`
+        ? `<div class="av bot${p.emoji ? " emo" : ""}${p.ai ? " ai" : ""}" style="background:${esc(p.color || "#4a4846")}">${esc(p.emoji || p.initials || initials(p.name))}</div>`
         : `<div class="av ${color}"><span class="pc" data-c="${color}K"></span></div>`;
       const tc = p.title_color || (p.bot ? "#7c2929" : null);
+      const elo = p.inf ? "∞" : p.elo;
       el.innerHTML = `${av}<div class="pinfo"><div class="pn${p.pid ? " link" : ""}">${titleHtml(p.title, tc)}` +
-        `<span class="nm" dir="auto">${esc(p.name || "")}</span>${p.elo ? `<span class="rt">(${esc(p.elo)})</span>` : ""}` +
+        `<span class="nm" dir="auto">${esc(p.name || "")}</span>${elo ? `<span class="rt">(${esc(elo)})</span>` : ""}${p.ai ? `<span class="ai-pill">AI</span>` : ""}` +
         `${p.flag ? `<span class="flag">${esc(p.flag)}</span>` : ""}${tagHtml(p.tag, "sm")}${showHtml(p.show)}</div><div class="caps" dir="ltr"></div></div>` +
         `<div class="react"></div><div class="clock" dir="ltr" hidden><span></span></div>`;
     }
     this.renderCaps();
     this.renderClocks(true);
+    if (this._ck) this.setChecks(...this._ck);
+    if (this._pk) this.setPockets(...this._pk);
   }
 
   renderCaps() {
     const fen = this.hist.fens[this.ply];
     const { counts, diff } = material(fen);
+    // captured pieces = what each side started with (any setup) minus what's left
+    const base = this.hist.fens[0] ? material(this.hist.fens[0]).counts : { w: START_COUNT, b: START_COUNT };
     for (const el of this.root.querySelectorAll(".pbar")) {
       const color = el.dataset.color;
       const opp = color === "w" ? "b" : "w";
       let html = "";
+      if (this.noCaps) { const box = el.querySelector(".caps"); if (box) box.innerHTML = ""; continue; }
       for (const k of ["p", "n", "b", "r", "q"]) {
-        const n = Math.max(0, START_COUNT[k] - counts[opp][k]);
+        const n = Math.max(0, (base[opp][k] ?? START_COUNT[k]) - counts[opp][k]);
         if (n) html += `<span class="cg">${Array.from({ length: n }, () => `<span class="pc" data-c="${opp}${k.toUpperCase()}"></span>`).join("")}</span>`;
       }
       const adv = color === "w" ? diff : -diff;
@@ -377,14 +392,16 @@ export class GameView {
     const fen = this.hist.fens[i];
     const uci = i > 0 ? this.hist.ucis[i - 1] : null;
     const live = this.isLive();
-    const { check } = fenInfo(fen);
+    // the server knows best whether a king is in check (game modes, illegal AI positions); else chess.js
+    const check = live && this.liveCheck !== undefined ? this.liveCheck : fenInfo(fen).check;
     this.board.set({
       fen, animate, check,
-      last: uci ? [uci.slice(0, 2), uci.slice(2, 4)] : null,
+      last: lastSquares(uci),
       movable: live ? this.movable : null,
       premovable: live ? this.premovable : null,
     });
-    if (!live) this.board.cancelPremove();
+    if (!live) { this.board.cancelPremove(); this.board.setDrop(null); }
+    if (this.fogLive !== undefined) this.board.setFog(live ? this.fogLive : null);
     this.renderCaps();
     this.renderMoves();
     this.$(".gs-nav").classList.toggle("behind", !live);
@@ -412,7 +429,9 @@ export class GameView {
         if (k < 0) return `<span class="mv empty">…</span>`;
         if (k >= sans.length) return `<span class="mv empty"></span>`;
         const cls = rv && rv.moves[k] ? rv.moves[k].cls : null;
-        return `<span class="mv${this.ply === k + 1 ? " cur" : ""}" data-ply="${k + 1}">${cls ? badgeHtml(cls, "sm") : ""}${pieceSan(sans[k], slot % 2 === 0 ? "w" : "b")}</span>`;
+        const wild = this.wildMarks && this.wildMarks[k];
+        return `<span class="mv${this.ply === k + 1 ? " cur" : ""}${wild ? " wild" : ""}" data-ply="${k + 1}"${wild ? ` title="${esc(t("wild_" + wild))}"` : ""}>` +
+          `${cls ? badgeHtml(cls, "sm") : ""}${wild ? `<i class="wi">${WILD_ICON[wild] || "🚫"}</i>` : ""}${pieceSan(sans[k], slot % 2 === 0 ? "w" : "b")}</span>`;
       };
       html += `<div class="mr"><span class="mn">${firstNo + i / 2}.</span>${cell(i)}${cell(i + 1)}</div>`;
     }
@@ -497,6 +516,82 @@ export class GameView {
   }
 
   hideOver() { this.$(".gv-over").classList.remove("on"); }
+
+  // ───────── game modes ─────────
+  // mode: what the server says about the game's rules (modes.public) — a chip with the rules, zones on the board
+  setMode(mode) {
+    this.gmode = mode || null;
+    this.$$(".gv-mode").forEach((c) => c.remove());
+    const slot = this.$(".gs-mode");
+    slot.hidden = true;
+    if (!mode || (mode.standard && !mode.wild)) { this.board.setZones([]); return; }
+    // one chip in the phone top bar, one in the side panel on computers (each layout hides the other place)
+    const chip = () => {
+      const el = h(`<button class="gv-mode${mode.wild ? " wild" : ""}" type="button"><span>${esc(mode.emoji || "🎲")}</span><b dir="auto">${esc(mode.name || "")}</b><i>ⓘ</i></button>`);
+      el.onclick = () => this.rulesCard();
+      return el;
+    };
+    this.$(".gv-top").insertBefore(chip(), this.$(".gv-live"));
+    const side = chip();
+    side.insertAdjacentHTML("beforeend", (mode.rules || []).length ? `<small dir="auto">${esc(mode.rules[0])}</small>` : "");
+    slot.appendChild(side);
+    slot.hidden = false;
+    const zones = [];
+    if (mode.hill) for (const sq of ["d4", "e4", "d5", "e5"]) zones.push({ sq, cls: "hill" });
+    if (mode.core === "racing") for (const f of "abcdefgh") zones.push({ sq: f + "8", cls: "race" });
+    else if (mode.race) for (const f of "abcdefgh") { zones.push({ sq: f + "8", cls: "race" }); zones.push({ sq: f + "1", cls: "race" }); }
+    this.board.setZones(zones);
+  }
+
+  rulesCard() {
+    const m = this.gmode;
+    if (!m) return;
+    modal({ title: `${esc(m.emoji)} ${esc(m.name)}`, body: `<ul class="rules-list">${(m.rules || []).map((r) => `<li dir="auto">${esc(r)}</li>`).join("")}</ul>`,
+      buttons: [{ label: "OK", cls: "primary" }] });
+  }
+
+  // checks given so far (3-check, 1-check…): {w, b} and how many win
+  setChecks(ck, need) {
+    this._ck = ck ? [ck, need] : null;
+    for (const el of this.root.querySelectorAll(".pbar")) {
+      let box = el.querySelector(".ckc");
+      if (!ck) { if (box) box.remove(); continue; }
+      if (!box) { box = h(`<span class="ckc"></span>`); el.querySelector(".pn").appendChild(box); }
+      const n = ck[el.dataset.color] || 0;
+      box.innerHTML = Array.from({ length: need || 3 }, (_, i) => `<i class="${i < n ? "on" : ""}">+</i>`).join("");
+    }
+  }
+
+  // crazyhouse pockets: {w: "QRP", b: ""}; the player's own pieces can be picked when it's their move
+  setPockets(pockets, mine, dropDests) {
+    this._pk = pockets ? [pockets, mine, dropDests] : null;
+    for (const el of this.root.querySelectorAll(".pbar")) {
+      const color = el.dataset.color;
+      let box = el.querySelector(".pocket");
+      if (!pockets) { if (box) box.remove(); continue; }
+      if (!box) { box = h(`<div class="pocket" dir="ltr"></div>`); el.querySelector(".pinfo").appendChild(box); }
+      const counts = {};
+      for (const ch of (pockets[color] || "").toUpperCase()) counts[ch] = (counts[ch] || 0) + 1;
+      const can = mine === color && dropDests;
+      box.innerHTML = ["Q", "R", "B", "N", "P"].filter((p) => counts[p]).map((p) =>
+        `<button class="pk${can && dropDests.has(p) ? " can" : ""}" data-p="${p}" ${can && dropDests.has(p) ? "" : "disabled"}>` +
+        `<span class="pc" data-c="${color}${p}"></span>${counts[p] > 1 ? `<b>${counts[p]}</b>` : ""}</button>`).join("") ||
+        `<span class="muted small">${t("pocket_empty")}</span>`;
+      const cur = this.board.drop;
+      if (cur && cur.piece[0] === color) box.querySelector(`.pk[data-p="${cur.piece[1]}"]`)?.classList.add("on");
+      if (can) box.querySelectorAll(".pk.can").forEach((b) => b.onclick = () => {
+        const on = b.classList.contains("on");
+        box.querySelectorAll(".pk").forEach((x) => x.classList.remove("on"));
+        if (on) { this.board.setDrop(null); return; }
+        b.classList.add("on");
+        this.board.setDrop({ piece: color + b.dataset.p, dests: dropDests.get(b.dataset.p) || [],
+          onCancel: () => b.classList.remove("on") });
+      });
+    }
+  }
+
+  // an AI game with illegal moves: which plies were illegal ("spawn", "teleport", "self", "king", "castle")
+  setWildMarks(marks) { this.wildMarks = marks || null; this.renderMoves(); }
 
   // ───────── Game Review ─────────
   setEval(on) {
@@ -584,6 +679,15 @@ export class GameView {
       `${ev != null ? `<span class="co-ev">${evalLabel(rv, i, ev)}</span>` : ""}</div>` +
       (showBest && m.best ? `<div class="co-b">${t("best_was", { move: pieceSan(m.best, m.color) })}</div>` : "");
   }
+}
+
+export const WILD_ICON = { spawn: "👻", teleport: "🌀", self: "🔪", king: "👑", castle: "🏰" };
+
+// the squares to highlight for a move: "e2e4" → e2, e4 · a drop / a piece from nowhere "N@f3" → f3 · hidden "" → none
+export function lastSquares(uci) {
+  if (!uci || uci === "0000") return null;
+  if (uci[1] === "@") return [uci.slice(2, 4)];
+  return [uci.slice(0, 2), uci.slice(2, 4)];
 }
 
 // "+0.4", "M3" (mate in 3), "1-0" when the position is checkmate

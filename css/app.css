@@ -1,7 +1,7 @@
 /* Chess — website styles. Dark theme, green board, the board never moves while you play. */
-@font-face { font-family: "Vazirmatn"; src: url("../fonts/vazirmatn-arabic-400.woff2?v=0a2a0f3abe") format("woff2"); font-weight: 400; font-display: swap;
+@font-face { font-family: "Vazirmatn"; src: url("../fonts/vazirmatn-arabic-400.woff2?v=0c23cd7a0c") format("woff2"); font-weight: 400; font-display: swap;
   unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F; }
-@font-face { font-family: "Vazirmatn"; src: url("../fonts/vazirmatn-arabic-700.woff2?v=0a2a0f3abe") format("woff2"); font-weight: 700 900; font-display: swap;
+@font-face { font-family: "Vazirmatn"; src: url("../fonts/vazirmatn-arabic-700.woff2?v=0c23cd7a0c") format("woff2"); font-weight: 700 900; font-display: swap;
   unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F; }
 
 :root {
@@ -238,13 +238,12 @@ h2 { font-size: 17px; margin: 18px 0 10px; color: var(--text2); }
 .ov-l b { color: #fff; }
 .ov-b { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px 18px; }
 .ov-b .btn { width: 100%; }
-.bubble { position: absolute; inset-inline-start: 50%; transform: translateX(-50%) translateY(6px); max-width: 86%; background: #fff; color: #222; font-weight: 600; font-size: 14px;
+.bubble { position: absolute; left: 50%; transform: translateX(-50%) translateY(6px); max-width: 86%; background: #fff; color: #222; font-weight: 600; font-size: 14px;
   padding: 8px 12px; border-radius: 12px; box-shadow: 0 6px 18px rgba(0, 0, 0, .4); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 35; text-align: center; }
-html[dir="rtl"] .bubble { transform: translateX(50%) translateY(6px); }
+.bubble { unicode-bidi: plaintext; }   /* each line reads in its own direction (the board row is always left-to-right) */
 .bubble[data-pos="top"] { top: 8px; }
 .bubble[data-pos="bot"] { bottom: 8px; }
 .bubble.on { opacity: 1; transform: translateX(-50%); }
-html[dir="rtl"] .bubble.on { transform: translateX(50%); }
 .emoji-pop { position: fixed; z-index: 60; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; width: 260px; background: #262421; padding: 8px;
   border-radius: 10px; box-shadow: 0 8px 30px rgba(0, 0, 0, .6); }
 .emoji-pop button { background: #3c3a37; border-radius: 6px; padding: 7px 4px; font-size: 13px; }

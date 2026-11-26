@@ -98,3 +98,15 @@ html[data-board="legend"] .cb-sq, .th-prev[data-k="legend"]{background:linear-gr
 html[data-board="legend"] .cb-sq, .th-prev[data-k="legend"]{animation:shine 5s linear infinite}
 html[data-board="legend"] .cb-pc .pc[data-c^="w"]{filter:drop-shadow(0 0 3px #ffd700) drop-shadow(0 0 6px #ffd700)}
 html[data-board="legend"] .cb-pc .pc[data-c^="b"]{filter:drop-shadow(0 0 3px #ffd700) drop-shadow(0 0 6px #ffd700)}
+html[data-board="x1"]{--light:#fff6cc;--dark:#ff6b6b;--last:rgba(116,192,252,0.55);--frame:#ffd43b;--accent-b:#4dabf7}
+html[data-board="x1"] .cb-sq, .th-prev[data-k="x1"]{background:radial-gradient(rgba(255,255,255,0.33) 18%, transparent 20%) 0 0/6.25% 6.25%,repeating-conic-gradient(var(--dark) 0% 25%, var(--light) 0% 50%) 0 0/25% 25%}
+html[data-board="x1"] .cb-pc .pc{filter:drop-shadow(0 .35cqw .25cqw rgba(0,0,0,.55))}
+html[data-board="x2"]{--light:#2b2b3a;--dark:#0d0d14;--last:rgba(184,184,255,0.55);--frame:#b8b8ff;--accent-b:#e0e0ff}
+html[data-board="x2"] .cb-sq, .th-prev[data-k="x2"]{background:radial-gradient(1.2px 1.2px at 12% 18%, #fff 50%, transparent 51%) 0 0/37% 41%, radial-gradient(1px 1px at 70% 60%, #fff 50%, transparent 51%) 0 0/29% 31%, radial-gradient(1.4px 1.4px at 40% 80%, rgba(255,255,255,.8) 50%, transparent 51%) 0 0/53% 47%,repeating-conic-gradient(var(--dark) 0% 25%, var(--light) 0% 50%) 0 0/25% 25%}
+html[data-board="x2"] .cb-sq, .th-prev[data-k="x2"]{animation:hue 9s linear infinite}
+html[data-board="x2"] .cb-pc .pc[data-c^="w"]{filter:drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 9px #ffffff)}
+html[data-board="x2"] .cb-pc .pc[data-c^="b"]{filter:drop-shadow(0 0 3px #8c8cff) drop-shadow(0 0 9px #8c8cff)}
+html[data-board="x3"]{--light:#123040;--dark:#081820;--last:rgba(0,229,255,0.55);--frame:#00e5ff;--accent-b:#00e5ff}
+html[data-board="x3"] .cb-sq, .th-prev[data-k="x3"]{background:linear-gradient(rgba(0,229,255,0.27) 1px, transparent 1px) 0 0/12.5% 12.5%, linear-gradient(90deg, rgba(0,229,255,0.27) 1px, transparent 1px) 0 0/12.5% 12.5%,repeating-conic-gradient(var(--dark) 0% 25%, var(--light) 0% 50%) 0 0/25% 25%}
+html[data-board="x3"] .cb-pc .pc[data-c^="w"]{filter:drop-shadow(0 0 3px #00e5ff) drop-shadow(0 0 6px #00e5ff)}
+html[data-board="x3"] .cb-pc .pc[data-c^="b"]{filter:drop-shadow(0 0 3px #ff4fd8) drop-shadow(0 0 6px #ff4fd8)}

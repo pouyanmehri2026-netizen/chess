@@ -1,8 +1,9 @@
 // Player profiles (#/u/<username>, #/p/<id>), the leaderboard (#/leaderboard) and the achievements list.
-import * as api from "./api.js?v=0a2a0f3abe";
-import { t, fa } from "./i18n.js?v=0a2a0f3abe";
-import { esc, toast, modal, titleHtml, tagHtml, nameHtml, profileHref, dateText, timeAgo } from "./util.js?v=0a2a0f3abe";
-import { current } from "./session.js?v=0a2a0f3abe";
+import * as api from "./api.js?v=0c23cd7a0c";
+import { t, fa } from "./i18n.js?v=0c23cd7a0c";
+import "./i18n3.js?v=0c23cd7a0c";
+import { esc, toast, modal, titleHtml, tagHtml, nameHtml, profileHref, dateText, timeAgo } from "./util.js?v=0c23cd7a0c";
+import { current } from "./session.js?v=0c23cd7a0c";
 
 const L = () => (fa() ? "fa" : "en");
 const cache = {};
@@ -12,7 +13,7 @@ export async function achList() {
   return cache[k];
 }
 
-const RAR = { common: "#9e9e9e", uncommon: "#4caf50", rare: "#2196f3", epic: "#9c27b0", legendary: "#ff9800" };
+const RAR = { common: "#9e9e9e", uncommon: "#4caf50", rare: "#2196f3", epic: "#9c27b0", legendary: "#ff9800", exotic: "#ff2bd6" };
 
 function graph(hist) {
   if (!hist || hist.length < 2) return `<div class="muted small">—</div>`;
@@ -74,34 +75,43 @@ export async function renderProfile(view, nav, { user, pid }) {
       <div class="stat"><span class="v">${p.wins}<small>/${p.losses}/${p.draws}</small></span><span class="l">${t("record")}</span><span class="s">${t("win_rate")} ${wr}%</span></div>
       <div class="stat"><span class="v">${p.best_streak}</span><span class="l">${t("best_streak")}</span><span class="s">${p.games} ${t("games_n")}</span></div>
       <div class="stat gold"><span class="v">${p.ach.score}</span><span class="l">${t("ach_score")}</span><span class="s">${Object.keys(have).length}/${p.ach.total}</span></div>
+      <div class="stat"><span class="v">${p.bot_wins || 0}<small>/${p.bot_games || 0}</small></span><span class="l">🤖 ${t("vs_bots")}</span><span class="s">✓ ${p.bots_beaten || 0}</span></div>
+      ${p.ai_games ? `<div class="stat ai"><span class="v">${p.ai_wins || 0}<small>/${p.ai_games}</small></span><span class="l">🧠 ${t("vs_ai")}</span><span class="s">🤡</span></div>` : ""}
     </div>
+    ${(p.modes && p.modes.length) || (p.made && p.made.length) ? `<div class="card modes-strip">
+      ${p.modes && p.modes.length ? `<h2>🎲 ${t("modes_played")}</h2><div class="chips">${p.modes.map((m) => `<span class="chip">${esc(m.emoji)} ${esc(m.name)}${m.wins ? ` · ${t("wins_in", { n: m.wins })}` : ""}</span>`).join("")}</div>` : ""}
+      ${p.made && p.made.length ? `<h2>🛠 ${t("modes_made")}</h2><div class="chips">${p.made.map((m) => `<a class="chip" href="#/mode/m${m.id}">${esc(m.emoji)} ${esc(m.name)} · ♥ ${m.likes} · ▶ ${m.plays}</a>`).join("")}</div>` : ""}</div>` : ""}
     <div class="prof-cols">
       <div class="card"><h2>📈 ${t("rating_history")}</h2>${graph(p.history)}
         <h2>🎖 ${t("titles")}</h2><div class="ttl-row">${(p.titles || []).map((c) => { const x = (all.titles || []).find((y) => y.code === c); return `<span class="ttl-big" title="${esc(x ? x.name : c)}">${titleHtml(c, x ? x.color : null)} <span class="muted small">${esc(x ? x.name : "")}</span></span>`; }).join("") || `<span class="muted small">—</span>`}</div>
         ${nextTitle ? `<div class="next-t"><div class="small muted">${t("next_title", { code: nextTitle.code, r: nextTitle.rating })}</div><div class="bar"><i style="width:${Math.min(100, Math.round((100 * p.peak) / nextTitle.rating))}%"></i></div></div>` : ""}
         <h2>♟ ${t("recent_games")}</h2><div class="glist">${(p.recent || []).map((g) => `<a class="grow ${g.outcome}" href="#/review/${esc(g.review)}">
             <span class="gi">${{ win: "🏆", loss: "✕", draw: "½", aborted: "—" }[g.outcome] || ""}</span>
-            <span class="go" dir="auto">${t("vs")} ${esc(g.opp)}</span><span class="gt">${esc(g.tc === "none" ? "♾" : g.tc || "")}${g.rated ? " · ★" : ""}</span>
+            <span class="go" dir="auto">${g.mode ? `<span title="${esc(g.mode.name)}">${esc(g.mode.emoji)}</span> ` : ""}${t("vs")} ${esc(g.opp)}</span><span class="gt">${esc(g.tc === "none" ? "♾" : g.tc || "")}${g.rated ? " · ★" : ""}</span>
             <span class="gd ${g.delta > 0 ? "up" : g.delta < 0 ? "down" : ""}">${g.rated && g.delta ? (g.delta > 0 ? "+" : "") + g.delta : ""}</span>
             <span class="ga muted small">${timeAgo(g.ts, fa())}</span></a>`).join("") || `<div class="muted small">${t("no_games")}</div>`}</div>
       </div>
-      <div class="card ach-card"><h2>🏅 ${t("achievements")} <span class="muted small">${Object.keys(have).length}/${p.ach.total} · ⭐ ${p.ach.score}</span></h2>
+      <div class="card ach-card"><h2>🏅 ${t("badges")} <span class="muted small">${Object.keys(have).length}/${p.ach.total} · ⭐ ${p.ach.score}</span></h2>
         <div class="seg ach-f"></div><div class="ach-grid"></div></div>
     </div></div>`;
 
   const cats = [["all", t("all")], ["have", t("unlocked")], ...Object.entries(all.cats || {})];
   const fbox = view.querySelector(".ach-f");
   fbox.innerHTML = cats.map(([k, l]) => `<button data-f="${k}" class="${k === filter ? "on" : ""}">${esc(l)}</button>`).join("");
+  const prog = (p.me && current() && current().progress) || {};
   const drawAch = () => {
-    const list = all.list.filter((a) => filter === "all" || (filter === "have" ? have[a.code] : a.cat === filter));
-    list.sort((a, b) => (!!have[b.code] - !!have[a.code]) || (b.points - a.points));
+    // retired / switched-off badges only show for the players who have them
+    const list = all.list.filter((a) => (!a.retired || have[a.code]) &&
+      (filter === "all" || (filter === "have" ? have[a.code] : a.cat === filter)));
+    list.sort((a, b) => (!!have[b.code] - !!have[a.code]) || ((b.cat === "exotic") - (a.cat === "exotic")) || (b.points - a.points));
     view.querySelector(".ach-grid").innerHTML = list.map((a) => {
       const got = !!have[a.code];
       const secret = a.hidden && !got;
-      return `<div class="ach ${got ? "got" : "lock"} r-${a.rarity}" title="${esc(secret ? t("hidden_ach") : a.desc)}">
+      const pr = !got && prog[a.code] ? ` · ${t("progress")} ${prog[a.code]}` : "";
+      return `<div class="ach ${got ? "got" : "lock"} r-${a.rarity}${a.cat === "exotic" ? " exotic" : ""}" title="${esc(secret ? t("hidden_ach") : a.desc)}">
         <span class="e">${secret ? "❔" : esc(a.emoji)}</span><span class="n" dir="auto">${esc(secret ? "???" : a.name)}</span>
         <span class="d" dir="auto">${esc(secret ? t("hidden_ach") : a.desc)}</span>
-        <span class="r" style="color:${RAR[a.rarity]}">${t("r_" + a.rarity)} · ${a.points} · ${a.pct}%</span></div>`;
+        <span class="r" style="color:${RAR[a.rarity] || "#999"}">${t("r_" + a.rarity)} · ${a.points} · ${a.pct}%${a.retired ? " · " + t("retired") : ""}${pr}</span></div>`;
     }).join("");
   };
   fbox.querySelectorAll("[data-f]").forEach((b) => b.onclick = () => { filter = b.dataset.f; fbox.querySelectorAll("[data-f]").forEach((x) => x.classList.toggle("on", x === b)); drawAch(); });
@@ -156,4 +166,4 @@ export async function renderLeaderboard(view, nav, params) {
   draw();
   return { destroy() {} };
 }
-export const V = "0a2a0f3abe";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "0c23cd7a0c";  // the site version this file belongs to (main.js reloads the page after an update)

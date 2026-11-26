@@ -26,7 +26,8 @@ function xySq(x, y, orient) {
 
 export function parseFen(fen) {
   const map = new Map();
-  const rows = fen.split(" ")[0].split("/");
+  // crazyhouse FENs carry the pockets in [...] and mark promoted pieces with ~
+  const rows = String(fen || "").split(" ")[0].replace(/\[.*$/, "").replace(/~/g, "").split("/");
   for (let r = 0; r < 8; r++) {
     let f = 0;
     for (const ch of rows[r] || "") {
@@ -60,6 +61,9 @@ export class Board {
     this.marks = [];          // review badges: {sq, color, icon, tint}
     this.hintSq = null;
     this.drawMode = false;
+    this.zones = [];          // game-mode squares: {sq, cls} (hill, finish line)
+    this.fog = null;          // fog of war: Set of the squares you can see (null = no fog)
+    this.drop = null;         // crazyhouse: {piece: "wN", dests: [sq…]} while placing a piece from the pocket
     this.pos = new Map();
     this.els = new Map();
     this.promo = null;
@@ -170,6 +174,29 @@ export class Board {
 
   // ───────── decorations ─────────
 
+  setZones(list) { this.zones = list || []; this.renderHl(); }
+  setFog(squares) { this.fog = squares ? new Set(squares) : null; this.renderHl(); }
+
+  // crazyhouse: pick a piece from the pocket, then a square (null = stop)
+  setDrop(d) {
+    this.drop = d && d.dests && d.dests.length ? d : null;
+    if (this.drop) this.sel = null;
+    this.renderHl();
+    this.renderDests();
+  }
+
+  // a short effect on a square: 💥 explosion, 👻 a piece from nowhere, 🌀 teleport, 🔪 own piece taken, 👑 king taken
+  flash(sq, icon, cls = "") {
+    if (!sq || !/^[a-h][1-8]$/.test(sq)) return;
+    const [x, y] = sqXY(sq, this.orient);
+    const el = document.createElement("div");
+    el.className = "fx-sq " + cls;
+    el.style.transform = tr(x, y);
+    el.innerHTML = `<span>${icon}</span>`;
+    this.lMk.appendChild(el);
+    setTimeout(() => el.remove(), 1400);
+  }
+
   setShapes(list) { this.shapes = list || []; this.renderShapes(); this.renderHl(); }
   setAutoShapes(list) { this.autoShapes = list || []; this.renderShapes(); }
   setMarks(list) { this.marks = list || []; this.renderMarks(); this.renderHl(); }
@@ -209,7 +236,14 @@ export class Board {
       parts.push(`<div class="hl ${cls}" style="transform:${tr(x, y)};${style}"></div>`);
     };
     const tinted = new Set(this.marks.filter((m) => m.tint).map((m) => m.sq));
-    if (this.last) for (const sq of this.last) if (!tinted.has(sq)) add(sq, "last");
+    for (const z of this.zones) add(z.sq, "zone " + (z.cls || ""));
+    if (this.fog) {
+      for (let f = 0; f < 8; f++) for (let r = 1; r <= 8; r++) {
+        const sq = FILES[f] + r;
+        if (!this.fog.has(sq)) add(sq, "fog");
+      }
+    }
+    if (this.last) for (const sq of this.last) if (sq && !tinted.has(sq)) add(sq, "last");
     for (const m of this.marks) if (m.tint) add(m.sq, "tint", `background:${m.tint}`);
     if (this.sel) add(this.sel, "sel");
     if (this.pre) { add(this.pre.from, "pre"); add(this.pre.to, "pre"); }
@@ -237,6 +271,13 @@ export class Board {
   }
 
   renderDests() {
+    if (this.drop) {
+      this.lDe.innerHTML = this.drop.dests.map((to) => {
+        const [x, y] = sqXY(to, this.orient);
+        return `<div class="dest drop" style="transform:${tr(x, y)}"></div>`;
+      }).join("");
+      return;
+    }
     if (!this.sel) { this.lDe.innerHTML = ""; return; }
     const { list, pre } = this.destsOf(this.sel);
     const o = this.orient;
@@ -299,6 +340,13 @@ export class Board {
     }
     if (e.button !== 0) return;
     this.clearShapes();
+    if (this.drop) {  // placing a pocket piece
+      const d = this.drop;
+      this.drop = null;
+      this.renderDests();
+      if (d.dests.includes(sq) && this.onMove) { this.onMove("@", sq, undefined, { drop: d.piece }); return; }
+      if (d.onCancel) d.onCancel();
+    }
     if (this.sel && this.sel !== sq) {
       const { list, pre } = this.destsOf(this.sel);
       if (list.includes(sq)) {

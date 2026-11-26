@@ -1,5 +1,5 @@
 // English / فارسی texts of the website.
-import { store } from "./util.js?v=0a2a0f3abe";
+import { store } from "./util.js?v=0c23cd7a0c";
 
 const T = {
   // navigation
@@ -277,7 +277,8 @@ Object.assign(T, {
 
 export function extend(obj) { Object.assign(T, obj); }
 
-export let LANG = "fa";
+// starts from the saved choice, so a module loaded right after a site update speaks the same language as the rest of the page
+export let LANG = store.get("lang") === "en" ? "en" : "fa";
 
 export function setLang(l) {
   LANG = l === "en" ? "en" : "fa";

@@ -1,10 +1,21 @@
 // The two menu pages: Play (online matchmaking, friend invites, resume) and Bots (pick an opponent).
-import { t, fa } from "./i18n.js?v=0a2a0f3abe";
-import { store, esc, toast, sleep, confirmBox, titleHtml } from "./util.js?v=0a2a0f3abe";
-import * as api from "./api.js?v=0a2a0f3abe";
-import { loadBots, botName } from "./local.js?v=0a2a0f3abe";
-import { play } from "./sound.js?v=0a2a0f3abe";
-import { loadMe as sessionMe } from "./session.js?v=0a2a0f3abe";
+import { t, fa } from "./i18n.js?v=0c23cd7a0c";
+import "./i18n3.js?v=0c23cd7a0c";
+import { store, esc, toast, sleep, confirmBox, titleHtml, nameHtml, modal } from "./util.js?v=0c23cd7a0c";
+import * as api from "./api.js?v=0c23cd7a0c";
+import { loadBots, botName } from "./local.js?v=0c23cd7a0c";
+import { play } from "./sound.js?v=0c23cd7a0c";
+import { loadMe as sessionMe } from "./session.js?v=0c23cd7a0c";
+
+// the game modes offered right on the Play page (all of them are on #/modes)
+const QUICK_MODES = [["standard", "♟️"], ["960", "🎲"], ["koth", "👑"], ["3check", "✚"], ["atomic", "💥"], ["crazyhouse", "🪂"],
+  ["fog", "🌫️"], ["double", "⚡"], ["antichess", "🙃"]];
+const MODE_NAMES = {
+  standard: ["Standard", "استاندارد"], 960: ["Chess960", "شطرنج ۹۶۰"], koth: ["King of the Hill", "شاه تپه"], "3check": ["Three-check", "سه کیش"],
+  atomic: ["Atomic", "اتمی"], crazyhouse: ["Crazyhouse", "خانه دیوانه"], fog: ["Fog of War", "مه جنگ"], double: ["Double Move", "حرکت دوبل"],
+  antichess: ["Antichess", "ضد شطرنج"],
+};
+const modeName = (k) => (MODE_NAMES[k] ? MODE_NAMES[k][fa() ? 1 : 0] : k);
 
 const ONLINE_TC = [
   ["bullet", ["1+0", "2+1"]], ["blitz", ["3+0", "3+2", "5+0"]], ["rapid", ["10+0", "15+10", "30+0"]],
@@ -19,6 +30,7 @@ export function renderPlay(view, nav) {
   let alive = true, searching = false;
   const u = api.auth();
   let tc = store.get("tc", "5+0");
+  let mode = store.get("playMode", "standard");
   const cached = store.get("me");
   view.innerHTML = `<div class="page play-page">
     <div class="hero">
@@ -30,6 +42,10 @@ export function renderPlay(view, nav) {
         <div class="tc-groups">${ONLINE_TC.map(([cat, list]) => `<div class="tc-group"><div class="tc-cat">${TC_ICON[cat]} ${t(cat)}</div>
           <div class="tc-row">${list.map((c) => `<button class="tc${c === tc ? " on" : ""}" data-tc="${c}">${c}</button>`).join("")}</div></div>`).join("")}</div>
         <p class="muted small">ℹ️ ${t("tc_help")}</p>
+        <div class="tc-cat">🎲 ${t("mode_label")}</div>
+        <div class="mode-chips">${QUICK_MODES.map(([k, e]) => `<button class="mchip${k === mode ? " on" : ""}" data-mode="${k}">${e} ${esc(modeName(k))}</button>`).join("")}
+          <a class="mchip more" href="#/modes">${t("more_modes")}</a></div>
+        <p class="muted small casual" ${mode === "standard" || mode === "960" ? "hidden" : ""}>🎈 ${t("casual_note")}</p>
         <button class="btn primary huge play-btn">${t("play_btn")}</button>
         <div class="note" ${u ? "hidden" : ""}>${t("need_login2")}<div class="note-b"><a class="btn primary" href="#/login?mode=signup">${t("signup")}</a><a class="btn" href="#/login">${t("login")}</a>${api.botLink() ? `<a class="btn ghost" href="${api.botLink()}" target="_blank" rel="noopener">${t("open_bale")} ↗</a>` : ""}</div></div>
         <div class="search" hidden><div class="spin"></div><div><b>${t("searching")}</b><div class="muted small">${t("searching_sub")}</div></div><span class="s-time" dir="ltr">0:00</span><button class="btn ghost s-cancel">${t("cancel")}</button></div>
@@ -40,7 +56,9 @@ export function renderPlay(view, nav) {
         </div>
         <div class="online muted small"></div>
       </div>
-    </div></div>`;
+    </div>
+    <div class="lobby-wrap"><div class="card lobby-card"><h2>🏟️ ${t("lobby")}</h2><div class="lobby-list"><div class="muted small">…</div></div></div>
+      <div class="card live-card"><h2>📺 ${t("live_games")}</h2><div class="live-list"><div class="muted small">…</div></div></div></div></div>`;
   miniBoard(view.querySelector(".mini-board"));
   const playBtn = view.querySelector(".play-btn");
   if (!u) playBtn.classList.add("dis");
@@ -48,6 +66,12 @@ export function renderPlay(view, nav) {
     tc = b.dataset.tc;
     store.set("tc", tc);
     view.querySelectorAll(".tc").forEach((x) => x.classList.toggle("on", x === b));
+  });
+  view.querySelectorAll("[data-mode]").forEach((b) => b.onclick = () => {
+    mode = b.dataset.mode;
+    store.set("playMode", mode);
+    view.querySelectorAll("[data-mode]").forEach((x) => x.classList.toggle("on", x === b));
+    view.querySelector(".casual").hidden = mode === "standard" || mode === "960";
   });
   playBtn.onclick = () => (u ? search() : toast(t("need_login")));
   view.querySelector(".s-cancel").onclick = () => cancel();
@@ -75,7 +99,7 @@ export function renderPlay(view, nav) {
   async function search() {
     if (searching) return;
     try {
-      const r = await api.post("queue", { t: u, tc });
+      const r = await api.post("queue", { t: u, tc, mode, l: fa() ? "fa" : "en" });
       if (r.t) { nav(`#/game/${r.t}`); return; }
       if (r.error) { toast(r.error); return; }
       waitLoop(0);
@@ -113,17 +137,94 @@ export function renderPlay(view, nav) {
   }
 
   async function invite() {
-    try {
-      const r = await api.post("invite", { t: u, tc, rated: true });
-      if (!r.link) { toast(r.error || t("offline")); return; }
-      const { modal } = await import("./util.js?v=0a2a0f3abe");
-      modal({ title: t("invite_ready"), body: `<p class="muted small">${t("play_friend_sub")}</p><div class="share"><input readonly value="${esc(r.link)}" dir="ltr"><button class="btn cp">${t("copy")}</button></div>`, buttons: [] });
-      document.querySelector(".share .cp").onclick = () => navigator.clipboard?.writeText(r.link).then(() => toast(t("copied")));
-    } catch { toast(t("offline")); }
+    let color = "r";
+    const box = document.createElement("div");
+    const draw = () => {
+      box.innerHTML = `<p class="muted small">${esc(modeName(mode))} · ${esc(tc)}</p>
+        <div class="bs-label">${t("invite_color")}</div><div class="seg">${[["w", "♔ " + t("white")], ["r", "🎲 " + t("random")], ["b", "♚ " + t("black")]]
+          .map(([c, l]) => `<button data-c="${c}" class="${c === color ? "on" : ""}">${l}</button>`).join("")}</div>`;
+      box.querySelectorAll("[data-c]").forEach((b) => b.onclick = () => { color = b.dataset.c; draw(); });
+    };
+    draw();
+    modal({ title: "🤝 " + t("invite_title"), body: box, buttons: [{ label: t("cancel"), cls: "ghost" },
+      { label: t("invite_make"), cls: "primary", onClick: async () => {
+        try {
+          const r = await api.post("invite", { t: u, tc, rated: mode === "standard" || mode === "960", mode, color, l: fa() ? "fa" : "en" });
+          if (!r.code) { toast(r.error || t("offline")); return false; }
+          const { inviteModal } = await import("./modes.js?v=0c23cd7a0c");
+          inviteModal(r);
+          return true;
+        } catch { toast(t("offline")); return false; }
+      } }] });
+  }
+
+  // ── the lobby: everyone waiting for a game (join with one tap) + live games to watch ──
+  async function lobbyLoop() {
+    while (alive) {
+      try {
+        const r = await api.get("pub/lobby", { l: fa() ? "fa" : "en", ...(u ? { t: u } : {}) }, 12000);
+        if (!alive) return;
+        drawLobby(r);
+      } catch { /* offline */ }
+      await sleep(4000);
+    }
+  }
+  function drawLobby(r) {
+    const box = view.querySelector(".lobby-list"), live = view.querySelector(".live-list");
+    if (!box) return;
+    box.innerHTML = (r.seeks || []).map((s) => `<div class="seek${s.mine ? " mine" : ""}">
+        <span class="sk-m" title="${esc((s.mode.rules || []).join(" · "))}">${esc(s.mode.emoji)}</span>
+        <span class="sk-n">${nameHtml({ name: s.name, title: s.title, title_color: s.title_color, tag: s.tag })} <span class="muted small">(${s.elo})</span></span>
+        <span class="sk-i muted small">${esc(s.mode.name)} · ${esc(s.tc)}${s.rated ? " ★" : ""}</span>
+        ${s.mine ? `<span class="muted small">${t("your_seek")}</span>` : `<button class="btn sm primary" data-sid="${s.sid}">${t("join")}</button>`}</div>`).join("") ||
+      `<div class="muted small">${t("lobby_empty")}</div>`;
+    box.querySelectorAll("[data-sid]").forEach((b) => b.onclick = async () => {
+      if (!u) { toast(t("need_login")); return; }
+      try {
+        const x = await api.post("seek_join", { t: u, sid: +b.dataset.sid, l: fa() ? "fa" : "en" });
+        if (x.t) nav(`#/game/${x.t}`); else toast(x.error || t("offline"), "bad");
+      } catch { toast(t("offline"), "bad"); }
+    });
+    live.innerHTML = (r.live || []).map((g) => `<a class="lv" href="#/watch/${g.gid}"><span>${esc(g.mode.emoji)}</span>
+      <span class="lv-n" dir="auto">${esc(g.w)} – ${esc(g.b)}</span><span class="muted small">${esc(g.tc)} · ${Math.ceil(g.plies / 2)}</span>
+      <span class="btn sm ghost">👁 ${t("watch")}</span></a>`).join("") || `<div class="muted small">—</div>`;
   }
 
   refresh();
+  lobbyLoop();
   return { destroy() { alive = false; searching = false; } };
+}
+
+// ───────── #/join/<code>: a friend's invite opened on the website ─────────
+export async function renderJoin(view, nav, code) {
+  view.innerHTML = `<div class="page"><div class="spin center"></div></div>`;
+  let r;
+  try { r = await api.get("pub/invite", { c: code, l: fa() ? "fa" : "en" }); } catch { r = { error: t("offline") }; }
+  if (!r.invite) {
+    view.innerHTML = `<div class="page"><div class="card join-card"><h1>😕</h1><p>${esc(r.error || "?")}</p><a class="btn primary" href="#/play">${t("play")}</a></div></div>`;
+    return { destroy() {} };
+  }
+  const i = r.invite;
+  const u = api.auth();
+  const colorTxt = { w: t("black"), b: t("white"), r: t("random") }[i.color || "r"];
+  view.innerHTML = `<div class="page"><div class="card join-card">
+    <div class="jc-e">${esc(i.mode.emoji || "♟️")}</div><h1>${t("join_title")}</h1>
+    <p class="jc-who">${nameHtml({ name: i.name, title: i.title, title_color: i.title_color })} <span class="muted">(${i.elo})</span></p>
+    <div class="kv"><div><span>${t("mode_label")}</span><b>${esc(i.mode.emoji)} ${esc(i.mode.name)}</b></div>
+      <div><span>${t("choose_tc")}</span><b dir="ltr">${esc(i.tc)}</b></div><div><span>${t("invite_color")}</span><b>${esc(colorTxt)}</b></div>
+      <div><span>★</span><b>${i.rated ? (fa() ? "رسمی" : "Rated") : (fa() ? "دوستانه" : "Casual")}</b></div></div>
+    <ul class="mrules">${(i.mode.rules || []).map((x) => `<li dir="auto">${esc(x)}</li>`).join("")}</ul>
+    ${u ? `<button class="btn primary huge jc-go">✅ ${t("join_btn")}</button>` :
+      `<p class="muted">${t("join_login")}</p><div class="row-b"><a class="btn primary" href="#/login?mode=signup&next=${encodeURIComponent("#/join/" + code)}">${t("signup")}</a>
+        <a class="btn" href="#/login?next=${encodeURIComponent("#/join/" + code)}">${t("login")}</a></div>`}</div></div>`;
+  const go = view.querySelector(".jc-go");
+  if (go) go.onclick = async () => {
+    try {
+      const x = await api.post("invite_join", { t: u, c: +code, l: fa() ? "fa" : "en" });
+      if (x.t) nav(`#/game/${x.t}`); else toast(x.error || t("offline"), "bad");
+    } catch { toast(t("offline"), "bad"); }
+  };
+  return { destroy() {} };
 }
 
 // a small decorative board with a famous position
@@ -154,17 +255,75 @@ export async function renderBots(view, nav) {
     <div class="bc-n" dir="auto">${b.title ? `<span class="ttl">${esc(b.title)}</span>` : ""}${esc(fa() ? b.name_fa : b.name)}</div>
     <div class="bc-r">${b.elo}</div>${beaten.has(b.level) ? `<span class="bc-ok" title="${t("beaten")}">✓</span>` : ""}</button>`;
   const club = bots.filter((b) => b.group === "club"), eng = bots.filter((b) => b.group !== "club");
+  let extra = [];  // the Bot Creator's bots and AI models (they play on the game server)
   view.innerHTML = `<div class="page bots-page">
-    <div class="page-h"><h1>🤖 ${t("bots_title")}</h1><p class="muted">${t("bots_sub")}</p></div>
+    <div class="page-h"><h1>🤖 ${t("bots_title")}</h1><p class="muted">${t("bots_sub")}</p>
+      <p class="muted small">🎲 <a href="#/modes">${fa() ? "هر رباتی را در هر حالت بازی یا از هر وضعیتی بازی کن →" : "Play any bot in any game mode or from any position →"}</a></p></div>
     ${saved && !saved.over ? `<a class="resume-card" href="#/bot"><span class="dot-live"></span><b>${esc(t("resume_bot", { name: botName(bots.find((b) => b.level === saved.level) || bots[0]) }))}</b></a>` : ""}
     <div class="bots-layout">
-      <div class="bots-list"><h2>${t("club")}</h2><div class="bot-grid">${club.map(card).join("")}</div>
+      <div class="bots-list"><div class="xbots"></div><h2>${t("club")}</h2><div class="bot-grid">${club.map(card).join("")}</div>
         <h2>${t("engines")}</h2><div class="bot-grid">${eng.map(card).join("")}</div></div>
       <div class="bot-setup"></div>
     </div></div>`;
   const setup = view.querySelector(".bot-setup");
   let sel = pick;
+  const xcard = (b) => `<button class="bot-card x${b.kind === "ai" ? " ai" : ""}${b.inf ? " inf" : ""}" data-l="${b.level}">
+    <div class="av bot lg emo" style="background:${esc(b.color)}">${esc(b.emoji)}</div>
+    <div class="bc-n" dir="auto">${b.title ? `<span class="ttl">${esc(b.title)}</span>` : ""}${esc(b.name)}</div>
+    <div class="bc-r">${b.kind === "ai" ? `🧠 ${esc(b.model)}` : b.inf ? "∞" : b.elo}</div>${b.kind === "ai" && b.illegal ? `<span class="bc-wild">🤡</span>` : ""}</button>`;
+  const showX = (b, scroll) => {
+    sel.level = b.level;
+    view.querySelectorAll(".bot-card").forEach((c) => c.classList.toggle("sel", +c.dataset.l === b.level));
+    const ai = b.kind === "ai";
+    const efen = store.get("editorFen");
+    const hasPos = efen && efen.split(" ")[0] !== "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+    if (!sel.start || (sel.start === "editor" && !hasPos)) sel.start = "normal";
+    setup.innerHTML = `<div class="bs-card">
+      <div class="bs-top"><div class="av bot xl emo" style="background:${esc(b.color)}">${esc(b.emoji)}</div>
+        <div><div class="bs-name" dir="auto">${b.title ? `<span class="ttl">${esc(b.title)}</span>` : ""}${esc(b.name)}</div>
+        <div class="bs-meta">${ai ? `🧠 ${esc(b.model)}` : `${t("rating")} <b>${b.inf ? "∞ · " + t("inf_rating") : b.elo}</b>`}</div></div></div>
+      ${b.bio ? `<p class="bs-bio" dir="auto">${esc(b.bio)}</p>` : ""}
+      ${ai ? `<p class="note small">${b.illegal ? t("ai_bot_note") : t("ai_legal_note")}</p>` : ""}
+      <p class="muted small">📊 ${t("bot_record")}: ${b.wins}–${b.losses}–${b.draws} · ${t("server_game")}</p>
+      <div class="bs-label">${t("choose_color")}</div>
+      <div class="seg colors">${[["w", "♔ " + t("white")], ["r", "🎲 " + t("random")], ["b", "♚ " + t("black")]].map(([c, l]) =>
+        `<button data-c="${c}" class="${sel.color === c ? "on" : ""}">${l}</button>`).join("")}</div>
+      ${ai ? "" : `<div class="bs-label">${t("choose_tc")}</div><div class="seg tcs">${BOT_TC.map((c) => `<button data-t="${c}" class="${sel.tc === c ? "on" : ""}">${c === "none" ? "♾ " + t("no_timer") : c}</button>`).join("")}</div>`}
+      <div class="bs-label">${t("play_from")}</div>
+      <div class="seg">${[["normal", "♟ " + t("normal_start")], ...(hasPos ? [["editor", "🧩 " + t("editor")]] : [])].map(([k, l]) =>
+        `<button data-st="${k}" class="${sel.start === k ? "on" : ""}">${l}</button>`).join("")}</div>
+      <button class="btn primary huge bs-go">${t("start")}</button></div>`;
+    setup.querySelectorAll("[data-c]").forEach((x) => x.onclick = () => { sel.color = x.dataset.c; showX(b); });
+    setup.querySelectorAll("[data-t]").forEach((x) => x.onclick = () => { sel.tc = x.dataset.t; showX(b); });
+    setup.querySelectorAll("[data-st]").forEach((x) => x.onclick = () => { sel.start = x.dataset.st; showX(b); });
+    setup.querySelector(".bs-go").onclick = async () => {
+      const u = api.auth();
+      if (!u) { toast(t("login_for_bot")); nav("#/login?mode=signup"); return; }
+      store.set("botPick", sel);
+      const mode = sel.start === "editor" && hasPos ? JSON.stringify({ spec: { core: "classic", start: "fen", fen: efen }, name: t("editor"), emoji: "🧩" }) : "standard";
+      try {
+        const r = await api.post("mode_bot", { t: u, level: b.level, color: sel.color === "r" ? "" : sel.color,
+          tc: ai ? "none" : sel.tc, mode, l: fa() ? "fa" : "en" });
+        if (r.t) nav(`#/game/${r.t}`); else toast(r.error || t("offline"), "bad");
+      } catch { toast(t("offline"), "bad"); }
+    };
+    setup.classList.add("open");
+    if (scroll && window.innerWidth < 900) setup.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  };
+  import("./modes.js?v=0c23cd7a0c").then(({ customBots }) => customBots()).then((list) => {
+    extra = list || [];
+    const box = view.querySelector(".xbots");
+    if (!box || !extra.length) return;
+    const eng2 = extra.filter((b) => b.kind !== "ai"), ais = extra.filter((b) => b.kind === "ai");
+    box.innerHTML = (ais.length ? `<h2>🧠 ${t("ai_bots")}</h2><div class="bot-grid">${ais.map(xcard).join("")}</div>` : "") +
+      (eng2.length ? `<h2>🛠 ${t("my_bots")}</h2><div class="bot-grid">${eng2.map(xcard).join("")}</div>` : "");
+    box.querySelectorAll(".bot-card").forEach((c) => c.onclick = () => showX(extra.find((x) => x.level === +c.dataset.l), true));
+    const cur = extra.find((x) => x.level === sel.level);
+    if (cur) showX(cur, false);
+  });
   const show = (level, scroll) => {
+    const xb = extra.find((x) => x.level === level);
+    if (xb) { showX(xb, scroll); return; }
     const b = bots.find((x) => x.level === level) || bots[0];
     sel.level = b.level;
     view.querySelectorAll(".bot-card").forEach((c) => c.classList.toggle("sel", +c.dataset.l === b.level));
@@ -203,4 +362,4 @@ export async function renderBots(view, nav) {
   });
   return { destroy() {} };
 }
-export const V = "0a2a0f3abe";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "0c23cd7a0c";  // the site version this file belongs to (main.js reloads the page after an update)
