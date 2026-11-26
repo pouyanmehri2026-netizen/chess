@@ -1,5 +1,5 @@
 // English / فارسی texts of the website.
-import { store } from "./util.js?v=0c23cd7a0c";
+import { store } from "./util.js?v=7ea31fdb57";
 
 const T = {
   // navigation
