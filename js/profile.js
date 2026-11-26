@@ -1,9 +1,9 @@
 // Player profiles (#/u/<username>, #/p/<id>), the leaderboard (#/leaderboard) and the achievements list.
-import * as api from "./api.js?v=7ea31fdb57";
-import { t, fa } from "./i18n.js?v=7ea31fdb57";
-import "./i18n3.js?v=7ea31fdb57";
-import { esc, toast, modal, titleHtml, tagHtml, nameHtml, profileHref, dateText, timeAgo } from "./util.js?v=7ea31fdb57";
-import { current } from "./session.js?v=7ea31fdb57";
+import * as api from "./api.js?v=ffa8bb0e87";
+import { t, fa } from "./i18n.js?v=ffa8bb0e87";
+import "./i18n3.js?v=ffa8bb0e87";
+import { esc, toast, modal, titleHtml, tagHtml, nameHtml, profileHref, dateText, timeAgo } from "./util.js?v=ffa8bb0e87";
+import { current } from "./session.js?v=ffa8bb0e87";
 
 const L = () => (fa() ? "fa" : "en");
 const cache = {};
@@ -166,4 +166,4 @@ export async function renderLeaderboard(view, nav, params) {
   draw();
   return { destroy() {} };
 }
-export const V = "7ea31fdb57";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "ffa8bb0e87";  // the site version this file belongs to (main.js reloads the page after an update)

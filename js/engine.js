@@ -1,6 +1,6 @@
 // Stockfish 19 (lite, single-threaded WebAssembly) running in a Web Worker, right in the browser.
-const JS = new URL("../engine/stockfish-19-lite-single.js?v=7ea31fdb57", import.meta.url).href;
-const WASM = new URL("../engine/stockfish-19-lite-single.wasm?v=7ea31fdb57", import.meta.url).href;
+const JS = new URL("../engine/stockfish-19-lite-single.js?v=ffa8bb0e87", import.meta.url).href;
+const WASM = new URL("../engine/stockfish-19-lite-single.wasm?v=ffa8bb0e87", import.meta.url).href;
 export const MATE = 100000;
 
 export class Engine {
