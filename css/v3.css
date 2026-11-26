@@ -44,14 +44,20 @@ html[data-dots="classic"] .dest.cap:not(.pre)::after { width: 100%; height: 100%
 
 /* ───────── piece animations: slide + bounce, lift when picked, pop in, shrink away when taken, a king in check shakes,
    and glowing designs breathe ───────── */
-/* the design's own idle animation (--pcidle) is always the first layer, a one-off move animation the second */
-.cb .cb-pc .pc { animation: var(--pcidle, pcnone 1s); }
-.cb .cb-pc .pc.anim { animation: var(--pcidle, pcnone 1s), pcmove .26s ease-out; }
-.cb .cb-pc .pc.lift { scale: 1.1; z-index: 2; animation: var(--pcidle, pcnone 1s), pclift .6s ease-in-out infinite alternate; }
-.cb .cb-pc .pc.dragging { scale: 1.2; animation: var(--pcidle, pcnone 1s); }
-.cb .cb-pc .pc.pop { animation: var(--pcidle, pcnone 1s), pcin .34s cubic-bezier(.2, .9, .3, 1.4); }
-.cb .cb-pc .pc.shake { animation: var(--pcidle, pcnone 1s), pcshake .6s ease-in-out; }
-.cb .cb-pc .pc.gone { animation: pcgone .25s ease-in forwards !important; }
+/* A board piece is positioned with `transform`, so it is never scaled itself (that would throw it off its square):
+   its picture is drawn by ::before, which does the moving/scaling. The piece's own layer only animates the glow.
+   --pcidle = the design's glow/colour animation (on the piece) · --pcmotion = its float/breathe (on the picture) */
+.cb .cb-pc .pc { background-size: 0 0; animation: var(--pcidle, pcnone 1s); }
+.cb .cb-pc .pc::before { content: ""; position: absolute; inset: 0; background-image: inherit; background-size: 100% 100%;
+  background-repeat: no-repeat; animation: var(--pcmotion, pcnone 1s); }
+.cb .cb-pc .pc.anim::before { animation: var(--pcmotion, pcnone 1s), pcmove .26s ease-out; }
+.cb .cb-pc .pc.lift { z-index: 2; }
+.cb .cb-pc .pc.lift::before { scale: 1.1; animation: var(--pcmotion, pcnone 1s), pclift .6s ease-in-out infinite alternate; }
+.cb .cb-pc .pc.dragging::before { scale: 1.2; animation: var(--pcmotion, pcnone 1s); }
+.cb .cb-pc .pc.pop::before { animation: var(--pcmotion, pcnone 1s), pcin .34s cubic-bezier(.2, .9, .3, 1.4); }
+.cb .cb-pc .pc.shake::before { animation: var(--pcmotion, pcnone 1s), pcshake .6s ease-in-out; }
+.cb .cb-pc .pc.gone::before { animation: pcgone .25s ease-in forwards !important; }
+.th-prev .pc { animation: var(--pcidle, pcnone 1s), var(--pcmotion, pcnone 1s); }
 @keyframes pcmove { 0% { scale: 1; } 45% { scale: 1.17; } 80% { scale: .95; } 100% { scale: 1; } }
 @keyframes pclift { from { translate: 0 0; } to { translate: 0 -7%; } }
 @keyframes pcin { 0% { scale: .2; opacity: 0; } 70% { scale: 1.16; opacity: 1; } 100% { scale: 1; } }
@@ -61,10 +67,12 @@ html[data-dots="classic"] .dest.cap:not(.pre)::after { width: 100%; height: 100%
   50% { filter: drop-shadow(0 0 4px var(--pg, #fff)) drop-shadow(0 0 var(--pgs, 12px) var(--pg, #fff)); } }
 @keyframes pcfloat { 0%, 100% { translate: 0 0; } 50% { translate: 0 -5%; } }
 @keyframes pcbreathe { 0%, 100% { scale: 1; } 50% { scale: 1.07; } }
-.cb .cb-pc .pc:nth-child(3n) { animation-delay: -.9s, 0s; }      /* the idle animation doesn't run in lock-step */
-.cb .cb-pc .pc:nth-child(3n+1) { animation-delay: -1.8s, 0s; }
-html.calm .cb .cb-pc .pc:not(.gone), html.calm .board-wrap > .cb { animation: none !important; }  /* Settings: effects off */
-@media (prefers-reduced-motion: reduce) { .cb .cb-pc .pc:not(.gone), .board-wrap > .cb { animation: none !important; } }
+/* the idle animations don't run in lock-step */
+.cb .cb-pc .pc:nth-child(3n), .cb .cb-pc .pc:nth-child(3n)::before { animation-delay: -.9s, 0s; }
+.cb .cb-pc .pc:nth-child(3n+1), .cb .cb-pc .pc:nth-child(3n+1)::before { animation-delay: -1.8s, 0s; }
+/* Settings → Animations & effects off */
+html.calm .cb .cb-pc .pc, html.calm .cb .cb-pc .pc:not(.gone)::before, html.calm .board-wrap > .cb { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .cb .cb-pc .pc, .cb .cb-pc .pc:not(.gone)::before, .board-wrap > .cb { animation: none !important; } }
 
 /* ───────── board layers for game modes ───────── */
 .hl.zone.hill { box-shadow: inset 0 0 0 .5cqw rgba(255, 215, 0, .85); background: rgba(255, 215, 0, .16); }
@@ -89,7 +97,7 @@ html.calm .cb .cb-pc .pc:not(.gone), html.calm .board-wrap > .cb { animation: no
 .th-mini { position: relative; display: block; aspect-ratio: 1; }
 .th-mini > i { display: none; }
 .th-prev { position: absolute; inset: 0; background: repeating-conic-gradient(var(--dark) 0% 25%, var(--light) 0% 50%) 0 0/25% 25%; }
-.th-prev .pc { position: absolute; width: 25%; height: 25%; transform: none; will-change: auto; animation: var(--pcidle, pcnone 1s); }
+.th-prev .pc { position: absolute; width: 25%; height: 25%; transform: none; will-change: auto; }
 .th-prev .pc:nth-child(1) { left: 25%; top: 25%; }
 .th-prev .pc:nth-child(2) { left: 50%; top: 50%; animation-delay: -1.3s; }
 .th-card.glow .th-mini { animation: miniglow 3.2s ease-in-out infinite; }

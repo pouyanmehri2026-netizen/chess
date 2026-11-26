@@ -1,9 +1,9 @@
 // Live things on every page: the owner's event ("admin abuse") banner with its countdown and effects
 // (confetti, snow, fireworks…), the Board Designer's newest boards, and the move-dot style.
-import * as api from "./api.js?v=1c105c2606";
-import { t, fa } from "./i18n.js?v=1c105c2606";
-import "./i18n3.js?v=1c105c2606";
-import { store, esc, sleep } from "./util.js?v=1c105c2606";
+import * as api from "./api.js?v=73cda5a6b6";
+import { t, fa } from "./i18n.js?v=73cda5a6b6";
+import "./i18n3.js?v=73cda5a6b6";
+import { store, esc, sleep } from "./util.js?v=73cda5a6b6";
 
 // ───────── move dots (always visible on every board) ─────────
 export const DOTS = ["bold", "ring", "glow", "big", "classic"];
@@ -155,4 +155,4 @@ function startFx() {
   }, kind === "snow" ? 260 : 420);
 }
 
-export const V = "1c105c2606";
+export const V = "73cda5a6b6";

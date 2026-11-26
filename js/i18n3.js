@@ -1,6 +1,6 @@
 // Chess v2.2 texts (English / فارسی): game modes, Mode Creator, Position Editor, lobby, custom & AI bots,
 // exotic badges, board designer, admin events. Pages add their own with extend() too.
-import { extend } from "./i18n.js?v=1c105c2606";
+import { extend } from "./i18n.js?v=73cda5a6b6";
 
 extend({
   // navigation
@@ -53,4 +53,4 @@ extend({
   ev_badge: ["Badge for showing up", "نشان برای حضور"], ev_mode: ["Featured mode", "حالت ویژه"],
 });
 
-export const V = "1c105c2606";
+export const V = "73cda5a6b6";

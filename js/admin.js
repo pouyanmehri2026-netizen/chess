@@ -1,9 +1,9 @@
 // The admin panel (#/admin): dashboard, players, titles & tags, fair play, reports, chat, games,
 // broadcast, settings and the log. Only for accounts with a role (owner / admin / mod).
-import * as api from "./api.js?v=1c105c2606";
-import { t, fa, extend } from "./i18n.js?v=1c105c2606";
-import { esc, toast, store, modal, confirmBox, titleHtml, tagHtml, nameHtml, timeAgo, dateText, profileHref } from "./util.js?v=1c105c2606";
-import { loadMe, isStaff } from "./session.js?v=1c105c2606";
+import * as api from "./api.js?v=73cda5a6b6";
+import { t, fa, extend } from "./i18n.js?v=73cda5a6b6";
+import { esc, toast, store, modal, confirmBox, titleHtml, tagHtml, nameHtml, timeAgo, dateText, profileHref } from "./util.js?v=73cda5a6b6";
+import { loadMe, isStaff } from "./session.js?v=73cda5a6b6";
 
 extend({
   a_dash: ["Dashboard", "داشبورد"], a_players: ["Players", "بازیکنان"], a_tags: ["Titles & tags", "عنوان و تگ"],
@@ -67,7 +67,7 @@ export async function renderAdmin(view, nav, params) {
   }
   const owner = me.role === "owner", admin = owner || me.role === "admin";
   let tab = params.tab || store.get("admTab") || "dash";
-  const X = await import("./adminx.js?v=1c105c2606");
+  const X = await import("./adminx.js?v=73cda5a6b6");
   const tabs = [["dash", "📊"], ["players", "👥"], ...(admin ? [["events", "🎉"], ["badges", "🏅"], ["boards", "🎨"], ["bots", "🤖"], ["giveall", "🎁"]] : []),
     ["tags", "🏷️"], ["modes", "🎲"], ["fair", "⚖️"], ["reports", "⚑"], ["chat", "💬"], ["games", "♟"],
     ...(owner ? [["broadcast", "📣"]] : []), ...(admin ? [["settings", "⚙️"], ["log", "📜"]] : [])];
@@ -419,4 +419,4 @@ export async function renderAdmin(view, nav, params) {
   go(tab);
   return { destroy() {} };
 }
-export const V = "1c105c2606";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "73cda5a6b6";  // the site version this file belongs to (main.js reloads the page after an update)

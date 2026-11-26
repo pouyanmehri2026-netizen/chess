@@ -1,8 +1,8 @@
 // Admin panel, part 2: 🎉 Events ("admin abuse"), 🏅 Badges (every badge, the Exotic category, "how to get it" rules),
 // 🎨 Board Designer, 🤖 Bots & AI models (ArvanCloud, OpenAI, Gemini…), 🎁 Give to everyone, 🎲 community modes.
-import { t, fa, extend } from "./i18n.js?v=1c105c2606";
-import "./i18n3.js?v=1c105c2606";
-import { esc, toast, modal, confirmBox, timeAgo } from "./util.js?v=1c105c2606";
+import { t, fa, extend } from "./i18n.js?v=73cda5a6b6";
+import "./i18n3.js?v=73cda5a6b6";
+import { esc, toast, modal, confirmBox, timeAgo } from "./util.js?v=73cda5a6b6";
 
 extend({
   a_events: ["Events", "رویدادها"], a_badges: ["Badges", "نشان‌ها"], a_boards: ["Boards", "صفحه‌ها"], a_bots: ["Bots & AI", "ربات و هوش مصنوعی"],
@@ -122,7 +122,7 @@ export async function events(el, c) {
       <label class="ck"><input type="checkbox" class="e-bale"> 📣 ${t("x_bale")}</label>
       <button class="btn primary e-go" ${c.owner ? "" : "disabled"}>🚀 ${t("x_ev_start")}</button></div></div>`;
   const q = (s) => el.querySelector(s);
-  const after = async (x) => { if (x.ok) { toast("✓", "good"); const { setEvent } = await import("./live.js?v=1c105c2606"); setEvent(x.event || null); c.go("events"); } };
+  const after = async (x) => { if (x.ok) { toast("✓", "good"); const { setEvent } = await import("./live.js?v=73cda5a6b6"); setEvent(x.event || null); c.go("events"); } };
   q(".ev-stop") && (q(".ev-stop").onclick = async () => after(await c.P("adm_event_stop")));
   q(".ev-ext") && (q(".ev-ext").onclick = async () => after(await c.P("adm_event_extend", { minutes: 15 })));
   el.querySelectorAll("[data-pre]").forEach((b) => b.onclick = async () => after(await c.P("adm_event_start", { preset: b.dataset.pre })));
@@ -289,8 +289,8 @@ const PFX = { none: "", glow: "", neon: "", float: "drop-shadow(0 4px 3px rgba(0
   shadow: "drop-shadow(0 3px 2px rgba(0,0,0,.55))", rainbow: "", ghost: "", gold: "sepia(.9) saturate(2.6) hue-rotate(-12deg) brightness(1.05)",
   ice: "saturate(.5) hue-rotate(175deg) brightness(1.12)" };
 // the pieces' own animation for each effect (the same as the real board: site/css/v3.css + bot/themes.py)
-const PIDLE = { glow: "pcglow 2.6s ease-in-out infinite", neon: "pcglow 2.6s ease-in-out infinite", float: "pcfloat 3s ease-in-out infinite",
-  breathe: "pcbreathe 2.4s ease-in-out infinite", rainbow: "hue 6s linear infinite", ghost: "pcfloat 4s ease-in-out infinite" };
+const PIDLE = { glow: "pcglow 2.6s ease-in-out infinite", neon: "pcglow 2.6s ease-in-out infinite", rainbow: "hue 6s linear infinite" };  // glow/colour
+const PMOVE = { float: "pcfloat 3s ease-in-out infinite", breathe: "pcbreathe 2.4s ease-in-out infinite", ghost: "pcfloat 4s ease-in-out infinite" };  // motion
 const hexRgba = (h) => { const x = h.replace("#", ""); const a = x.length === 8 ? parseInt(x.slice(6, 8), 16) / 255 : 1; return `rgba(${parseInt(x.slice(0, 2), 16)},${parseInt(x.slice(2, 4), 16)},${parseInt(x.slice(4, 6), 16)},${a.toFixed(2)})`; };
 
 function previewHtml(d) {
@@ -303,6 +303,7 @@ function previewHtml(d) {
     const c = esc(side === "w" ? d.wps : d.bps);
     let s = glowy ? `--pg:${c};--pgs:${big * 2}px;filter:drop-shadow(0 0 3px ${c}) drop-shadow(0 0 ${big}px ${c});` : PFX[d.fx] ? `filter:${PFX[d.fx]};` : "";
     if (PIDLE[d.fx]) s += `--pcidle:${PIDLE[d.fx]};`;
+    if (PMOVE[d.fx]) s += `--pcmotion:${PMOVE[d.fx]};`;
     if (d.fx === "ghost") s += "opacity:.78;";
     return s;
   };
@@ -387,7 +388,7 @@ export async function boards(el, c) {
       if (!d.en.trim()) { toast(t("x_name_en") + "?", "bad"); return false; }
       const x = await c.P("adm_board_save", { ...d, id: b ? b.id : undefined });
       if (!x.ok) return false;
-      const { injectCss } = await import("./live.js?v=1c105c2606");
+      const { injectCss } = await import("./live.js?v=73cda5a6b6");
       injectCss(x.css);
       toast("🎨 ✓", "good");
       c.go("boards");
@@ -586,4 +587,4 @@ export async function modes(el, c) {
   el.querySelectorAll("[data-act]").forEach((b) => b.onclick = async () => { if ((await c.P("adm_mode", { id: +b.dataset.id, action: b.dataset.act })).ok) c.go("modes"); });
 }
 
-export const V = "1c105c2606";
+export const V = "73cda5a6b6";
