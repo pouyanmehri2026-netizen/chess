@@ -1,9 +1,9 @@
 // Log in / sign up (e-mail code, password, "log in with Bale", forgot password) and the Settings page
 // (board design, title & tag, showcase, bio, flag, account security, linking Bale).
-import * as api from "./api.js?v=ffb4d75985";
-import { t, fa } from "./i18n.js?v=ffb4d75985";
-import { store, esc, toast, sleep, titleHtml, tagHtml, nameHtml, confirmBox } from "./util.js?v=ffb4d75985";
-import { loadMe, setSession, logout, applyTheme, current } from "./session.js?v=ffb4d75985";
+import * as api from "./api.js?v=fd61796546";
+import { t, fa } from "./i18n.js?v=fd61796546";
+import { store, esc, toast, sleep, titleHtml, tagHtml, nameHtml, confirmBox } from "./util.js?v=fd61796546";
+import { loadMe, setSession, logout, applyTheme, current } from "./session.js?v=fd61796546";
 
 const L = () => (fa() ? "fa" : "en");
 const FLAGS = ["", "🇮🇷", "🇦🇫", "🇹🇯", "🇹🇷", "🇮🇶", "🇦🇪", "🇸🇦", "🇦🇿", "🇦🇲", "🇬🇪", "🇷🇺", "🇩🇪", "🇬🇧", "🇫🇷", "🇮🇹",
@@ -13,11 +13,11 @@ let themesCache = null;
 export async function loadThemes(force = false) {
   if (themesCache && !force) return themesCache;
   try {  // live from the server: includes the Board Designer's newest boards
-    const { loadLiveThemes } = await import("./live.js?v=ffb4d75985");
+    const { loadLiveThemes } = await import("./live.js?v=fd61796546");
     const live = await loadLiveThemes(force);
     if (live && live.length) { themesCache = live; return themesCache; }
   } catch { /* offline */ }
-  try { themesCache = await (await fetch(`data/themes.json?v=ffb4d75985`)).json(); } catch { themesCache = []; }
+  try { themesCache = await (await fetch(`data/themes.json?v=fd61796546`)).json(); } catch { themesCache = []; }
   return themesCache;
 }
 
@@ -25,6 +25,31 @@ export async function loadThemes(force = false) {
 export function themePreview(th) {
   return `<span class="th-prev" data-k="${esc(th.key)}" style="--light:${esc(th.light)};--dark:${esc(th.dark)}">` +
     `<span class="pc" data-c="bK"></span><span class="pc" data-c="wQ"></span></span>`;
+}
+
+// Settings: a knight hopping back and forth (and taking a pawn) with the chosen piece animation — the real board classes
+function demoAnim(box) {
+  if (!box) return;
+  const [n, p] = box.querySelectorAll(".pc");
+  const at = (el, x, y) => { el.style.transform = `translate(${x * 100}%,${y * 100}%)`; };
+  at(n, 0, 3); at(p, 1, 1);
+  let away = false;
+  const timer = setInterval(() => {
+    if (!document.body.contains(box)) { clearInterval(timer); return; }
+    const style = document.documentElement.dataset.anim || "natural";
+    const ms = { none: 0, fast: 130, natural: 250, arcade: 370, slow: 460 }[style] ?? 250;
+    away = !away;
+    if (style !== "none") n.classList.add("anim");
+    at(n, away ? 1 : 0, away ? 1 : 3);
+    if (away) {  // the pawn gets taken…
+      if (style !== "none") p.classList.add("gone"); else p.style.opacity = "0";
+    } else {     // …and comes back
+      p.classList.remove("gone");
+      p.style.opacity = "";
+      if (style !== "none") { p.classList.add("pop"); setTimeout(() => p.classList.remove("pop"), 380); }
+    }
+    setTimeout(() => n.classList.remove("anim"), ms + 40);
+  }, 1500);
 }
 
 function field(name, label, type = "text", extra = "") {
@@ -257,13 +282,22 @@ export async function renderSettings(view, nav, params) {
       <div class="card"><h2>🎯 ${t("dots_style")}</h2><p class="muted small">${t("dots_sub")}</p>
         <div class="dot-pick">${[["bold", t("dots_bold")], ["ring", t("dots_ring")], ["glow", t("dots_glow")], ["big", t("dots_big")], ["classic", t("dots_classic")]]
           .map(([k, l]) => `<button class="dp${dots === k ? " on" : ""}" data-dots="${k}"><span class="dp-demo" data-demo="${k}"><i class="l"><b></b></i><i class="d"><b></b></i><i class="d cap"><b></b><span class="pc" data-c="bN"></span></i><i class="l cap"><b></b><span class="pc" data-c="bP"></span></i></span><span>${l}</span></button>`).join("")}</div>
-        <label class="ck"><input type="checkbox" class="fx-on" ${store.get("fx") !== false ? "checked" : ""}> ${t("fx_toggle")}</label></div>`;
+        <label class="ck"><input type="checkbox" class="fx-on" ${store.get("fx") !== false ? "checked" : ""}> ${t("fx_toggle")}</label></div>
+      <div class="card"><h2>✨ ${t("anim_style")}</h2><p class="muted small">${t("anim_sub")}</p>
+        <div class="anim-demo cb static"><div class="cb-sq"></div><div class="cb-pc"><div class="pc" data-c="wN"></div><div class="pc" data-c="bP"></div></div></div>
+        <div class="seg wrap anim-pick">${["natural", "arcade", "fast", "slow", "none"].map((k) => `<button data-a="${k}" class="${(store.get("anim") || "natural") === k ? "on" : ""}">${t("anim_" + k)}</button>`).join("")}</div></div>`;
+    demoAnim(body.querySelector(".anim-demo"));
+    body.querySelectorAll("[data-a]").forEach((b) => b.onclick = async () => {
+      const { setAnim } = await import("./live.js?v=fd61796546");
+      setAnim(b.dataset.a);
+      body.querySelectorAll("[data-a]").forEach((x) => x.classList.toggle("on", x === b));
+    });
     body.querySelectorAll("[data-dots]").forEach((b) => b.onclick = async () => {
-      const { setDots } = await import("./live.js?v=ffb4d75985");
+      const { setDots } = await import("./live.js?v=fd61796546");
       setDots(b.dataset.dots);
       body.querySelectorAll("[data-dots]").forEach((x) => x.classList.toggle("on", x === b));
     });
-    body.querySelector(".fx-on").onchange = async (e) => { const { setFx } = await import("./live.js?v=ffb4d75985"); setFx(e.target.checked); };
+    body.querySelector(".fx-on").onchange = async (e) => { const { setFx } = await import("./live.js?v=fd61796546"); setFx(e.target.checked); };
     body.querySelectorAll(".th-card").forEach((b) => b.onclick = async () => {
       const k = b.dataset.k;
       const th = themes.find((x) => x.key === k);
@@ -317,7 +351,7 @@ export async function renderSettings(view, nav, params) {
     body.querySelectorAll("[data-fl]").forEach((b) => b.onclick = () => { flag = b.dataset.fl; body.querySelectorAll("[data-fl]").forEach((x) => x.classList.toggle("on", x === b)); });
     body.querySelector(".save-prof").onclick = async () => { if (await save({ bio: body.querySelector(".bio-in").value, flag })) { me.flag = flag; prev(); } };
     // showcase: the player's achievements
-    import("./profile.js?v=ffb4d75985").then(async ({ achList }) => {
+    import("./profile.js?v=fd61796546").then(async ({ achList }) => {
       const all = await achList();
       const have = all.list.filter((x) => (me.ach_codes || []).includes(x.code));
       const grid = body.querySelector(".sc-grid");
@@ -402,4 +436,4 @@ const COLORS = { SGM: "#f5b700", GM: "#c0392b", IM: "#d35400", WGM: "#c2185b", F
 export const titleColor = (c) => COLORS[c] || "#7c2929";
 export function bestTitle(codes) { return PRESTIGE.find((c) => (codes || []).includes(c)) || null; }
 export { current };
-export const V = "ffb4d75985";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "fd61796546";  // the site version this file belongs to (main.js reloads the page after an update)

@@ -1,11 +1,11 @@
 // The game screen shared by online games, bot games, spectating and Game Review:
 // player bars + clocks, the locked board, move list / history browsing, review panel, end-of-game card.
-import { Board, sqXY } from "./board.js?v=ffb4d75985";
-import { Chess } from "./vendor/chess.js?v=ffb4d75985";
-import { t, fa } from "./i18n.js?v=ffb4d75985";
-import { esc, fmtClock, h, initials, winPct, evalText, store, titleHtml, tagHtml, showHtml, nameHtml, profileHref, modal } from "./util.js?v=ffb4d75985";
-import "./i18n3.js?v=ffb4d75985";
-import { play, playMove, soundOn, setSound } from "./sound.js?v=ffb4d75985";
+import { Board, sqXY } from "./board.js?v=fd61796546";
+import { Chess } from "./vendor/chess.js?v=fd61796546";
+import { t, fa } from "./i18n.js?v=fd61796546";
+import { esc, fmtClock, h, initials, winPct, evalText, store, titleHtml, tagHtml, showHtml, nameHtml, profileHref, modal } from "./util.js?v=fd61796546";
+import "./i18n3.js?v=fd61796546";
+import { play, playMove, soundOn, setSound } from "./sound.js?v=fd61796546";
 
 export const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 

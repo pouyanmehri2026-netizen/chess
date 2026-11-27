@@ -1,9 +1,9 @@
 // The community chat (#/chat) and the small chat box inside online games.
-import * as api from "./api.js?v=ffb4d75985";
-import { t, fa } from "./i18n.js?v=ffb4d75985";
-import { esc, toast, sleep, nameHtml, profileHref, store, confirmBox } from "./util.js?v=ffb4d75985";
-import { current, isStaff, loadMe } from "./session.js?v=ffb4d75985";
-import { play } from "./sound.js?v=ffb4d75985";
+import * as api from "./api.js?v=fd61796546";
+import { t, fa } from "./i18n.js?v=fd61796546";
+import { esc, toast, sleep, nameHtml, profileHref, store, confirmBox } from "./util.js?v=fd61796546";
+import { current, isStaff, loadMe } from "./session.js?v=fd61796546";
+import { play } from "./sound.js?v=fd61796546";
 
 const L = () => (fa() ? "fa" : "en");
 const hhmm = (ts) => { const d = new Date(ts * 1000); return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; };
@@ -122,4 +122,4 @@ export class GameChat {
     return fresh.length;
   }
 }
-export const V = "ffb4d75985";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "fd61796546";  // the site version this file belongs to (main.js reloads the page after an update)

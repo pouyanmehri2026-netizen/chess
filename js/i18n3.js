@@ -1,6 +1,6 @@
 // Chess v2.2 texts (English / فارسی): game modes, Mode Creator, Position Editor, lobby, custom & AI bots,
 // exotic badges, board designer, admin events. Pages add their own with extend() too.
-import { extend } from "./i18n.js?v=ffb4d75985";
+import { extend } from "./i18n.js?v=fd61796546";
 
 extend({
   // navigation
@@ -38,7 +38,9 @@ extend({
   login_for_bot: ["Log in (or open from Bale) to play this bot.", "برای بازی با این ربات وارد شو (یا از بله باز کن)."],
   // settings
   dots_style: ["Move dots", "نقطه‌های حرکت"], dots_sub: ["How the squares you can move to are shown.", "خانه‌هایی که می‌توانی بروی چطور نشان داده شوند."],
-  dots_bold: ["Bold (always visible)", "پررنگ (همیشه پیدا)"], dots_ring: ["Ring", "حلقه"], dots_glow: ["Glow", "درخشان"],
+  dots_bold: ["Soft (like chess.com)", "ملایم (مثل chess.com)"], dots_ring: ["Ring", "حلقه"], dots_glow: ["Coloured glow", "رنگی درخشان"],
+  anim_style: ["Piece animation", "انیمیشن مهره‌ها"], anim_sub: ["How the pieces move — like chess.com.", "مهره‌ها چطور حرکت کنند — مثل chess.com."],
+  anim_natural: ["Natural", "طبیعی"], anim_arcade: ["Arcade", "آرکید"], anim_fast: ["Fast", "سریع"], anim_slow: ["Slow", "آهسته"], anim_none: ["None", "بدون انیمیشن"],
   dots_classic: ["Classic (faint)", "کلاسیک (کم‌رنگ)"], dots_big: ["Big", "بزرگ"],
   fx_toggle: ["Animations & effects (moving pieces, glowing boards, event confetti…)", "انیمیشن و افکت‌ها (حرکت مهره‌ها، درخشش صفحه، کاغذرنگی رویدادها…)"],
   secret_board: ["Secret board", "صفحه مخفی"], new_tag: ["NEW", "جدید"], custom_board: ["Special", "ویژه"],
@@ -53,4 +55,4 @@ extend({
   ev_badge: ["Badge for showing up", "نشان برای حضور"], ev_mode: ["Featured mode", "حالت ویژه"],
 });
 
-export const V = "ffb4d75985";
+export const V = "fd61796546";
