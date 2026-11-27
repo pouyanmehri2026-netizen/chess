@@ -1,23 +1,24 @@
 /* Chess v2.2 — game modes, Mode Creator, Position Editor, lobby, Bot Creator & AI bots, exotic badges,
    Board Designer, admin events, and move dots you can always see. */
 
-/* ───────── move dots: UNDER the pieces (a piece is never covered), visible on every board design ───────── */
-/* bold (default): a white dot with a dark edge · a capture: a white ring with dark edges around the piece */
-.dest::after { width: 30%; height: 30%; background: #fff; box-shadow: 0 0 0 max(2px, .38cqw) rgba(0, 0, 0, .8), 0 0 max(5px, 1cqw) rgba(0, 0, 0, .4); }
-.dest.cap::after { width: 100%; height: 100%; background: transparent;
-  box-shadow: inset 0 0 0 max(1.5px, .3cqw) rgba(0, 0, 0, .75), inset 0 0 0 max(4px, 1cqw) rgba(255, 255, 255, .95), inset 0 0 0 max(5.5px, 1.35cqw) rgba(0, 0, 0, .55); }
-.dest.pre::after { background: #ff6b6b; box-shadow: 0 0 0 max(2px, .38cqw) rgba(80, 0, 0, .85); }
-.dest.pre.cap::after { background: transparent; box-shadow: inset 0 0 0 max(1.5px, .3cqw) rgba(80, 0, 0, .8), inset 0 0 0 max(4px, 1cqw) #ff6b6b, inset 0 0 0 max(5.5px, 1.35cqw) rgba(80, 0, 0, .6); }
-.dest.drop::after { width: 36%; height: 36%; background: #4d9cff; box-shadow: 0 0 0 max(2px, .38cqw) rgba(255, 255, 255, .85), 0 0 max(5px, 1cqw) rgba(0, 0, 0, .4); }
-html[data-dots="ring"] .dest:not(.cap)::after { width: 42%; height: 42%; background: transparent;
-  box-shadow: inset 0 0 0 max(1.5px, .3cqw) rgba(0, 0, 0, .8), inset 0 0 0 max(4px, .95cqw) #fff, 0 0 0 max(1.5px, .3cqw) rgba(0, 0, 0, .8); }
-html[data-dots="glow"] .dest:not(.pre)::after { width: 32%; height: 32%; background: var(--accent-b, #81b64c);
-  box-shadow: 0 0 0 max(2px, .4cqw) rgba(255, 255, 255, .9), 0 0 max(8px, 1.8cqw) max(2px, .4cqw) var(--accent-b, #81b64c); }
-html[data-dots="glow"] .dest.cap:not(.pre)::after { width: 100%; height: 100%; background: transparent;
-  box-shadow: inset 0 0 0 max(2px, .4cqw) rgba(255, 255, 255, .9), inset 0 0 0 max(5px, 1.2cqw) var(--accent-b, #81b64c), inset 0 0 max(8px, 2cqw) var(--accent-b, #81b64c); }
+/* ───────── move dots, chess.com style: soft see-through dots UNDER the pieces. Each board design has its own dot
+   colours (bot/themes.py): a dark dot on light squares, a soft light dot on very dark squares — always visible,
+   never glaring. A capture = a soft ring around the piece (like chess.com). ───────── */
+.dest::after { width: 33%; height: 33%; background: var(--dot-l, rgba(0, 0, 0, .2)); box-shadow: none; }
+.dest.on-d::after { background: var(--dot-d, rgba(0, 0, 0, .2)); }
+.dest.cap::after { width: 100%; height: 100%; background: transparent; box-shadow: inset 0 0 0 max(4px, 1.15cqw) var(--dot-l, rgba(0, 0, 0, .2)); }
+.dest.cap.on-d::after { box-shadow: inset 0 0 0 max(4px, 1.15cqw) var(--dot-d, rgba(0, 0, 0, .2)); }
+.dest.pre::after { background: rgba(214, 60, 60, .5); }
+.dest.pre.cap::after { background: transparent; box-shadow: inset 0 0 0 max(4px, 1.15cqw) rgba(214, 60, 60, .55); }
+.dest.drop::after { width: 36%; height: 36%; background: rgba(60, 130, 230, .55); }
 html[data-dots="big"] .dest:not(.cap)::after { width: 44%; height: 44%; }
-html[data-dots="classic"] .dest:not(.pre)::after { width: 33%; height: 33%; background: rgba(0, 0, 0, .14); box-shadow: none; }
-html[data-dots="classic"] .dest.cap:not(.pre)::after { width: 100%; height: 100%; background: transparent; box-shadow: inset 0 0 0 max(4px, 1.05cqw) rgba(0, 0, 0, .14); }
+html[data-dots="ring"] .dest:not(.cap):not(.pre)::after { width: 40%; height: 40%; background: transparent; box-shadow: inset 0 0 0 max(3px, .9cqw) var(--dot-l, rgba(0, 0, 0, .2)); }
+html[data-dots="ring"] .dest.on-d:not(.cap):not(.pre)::after { box-shadow: inset 0 0 0 max(3px, .9cqw) var(--dot-d, rgba(0, 0, 0, .2)); }
+html[data-dots="glow"] .dest:not(.pre)::after { background: var(--dot-acc, rgba(129, 182, 76, .65)); box-shadow: 0 0 max(6px, 1.6cqw) var(--dot-acc, rgba(129, 182, 76, .65)); }
+html[data-dots="glow"] .dest.cap:not(.pre)::after { background: transparent;
+  box-shadow: inset 0 0 0 max(4px, 1.15cqw) var(--dot-acc, rgba(129, 182, 76, .65)), inset 0 0 max(6px, 1.6cqw) var(--dot-acc, rgba(129, 182, 76, .65)); }
+html[data-dots="classic"] .dest:not(.pre)::after { background: rgba(0, 0, 0, .14); }
+html[data-dots="classic"] .dest.cap:not(.pre)::after { background: transparent; box-shadow: inset 0 0 0 max(4px, 1.05cqw) rgba(0, 0, 0, .14); }
 .dp-demo { display: grid; grid-template-columns: repeat(2, 26px); width: 52px; height: 52px; border-radius: 4px; overflow: hidden; container-type: inline-size; }
 .dp-demo i { position: relative; display: block; width: 26px; height: 26px; background: var(--light); }
 .dp-demo i.d { background: var(--dark); }
@@ -27,52 +28,76 @@ html[data-dots="classic"] .dest.cap:not(.pre)::after { width: 100%; height: 100%
 .dot-pick { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 12px; }
 .dp { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px; border-radius: 10px; background: #1f1e1c; font-size: 12px; font-weight: 700; }
 .dp.on { box-shadow: 0 0 0 3px var(--green); }
-/* the demos use the same look as the board (each one forced to its own style) */
-.dp-demo[data-demo] b::after { width: 30%; height: 30%; background: #fff; box-shadow: 0 0 0 2px rgba(0, 0, 0, .8), 0 0 5px rgba(0, 0, 0, .4); }
-.dp-demo[data-demo] .cap b::after { width: 100%; height: 100%; background: transparent; box-shadow: inset 0 0 0 1.5px rgba(0, 0, 0, .75), inset 0 0 0 4px #fff, inset 0 0 0 5.5px rgba(0, 0, 0, .55); }
-.dp-demo[data-demo="ring"] :not(.cap) > b::after { width: 42%; height: 42%; background: transparent; box-shadow: inset 0 0 0 1.5px rgba(0, 0, 0, .8), inset 0 0 0 4px #fff, 0 0 0 1.5px rgba(0, 0, 0, .8); }
-.dp-demo[data-demo="glow"] b::after { width: 32%; height: 32%; background: var(--accent-b, var(--green)); box-shadow: 0 0 0 2px #fff, 0 0 8px 2px var(--accent-b, var(--green)); }
-.dp-demo[data-demo="glow"] .cap b::after { width: 100%; height: 100%; background: transparent; box-shadow: inset 0 0 0 2px #fff, inset 0 0 0 5px var(--accent-b, var(--green)), inset 0 0 8px var(--accent-b, var(--green)); }
+/* the demos look like the board (with the board design you use) */
+.dp-demo[data-demo] b::after { width: 33%; height: 33%; background: var(--dot-l, rgba(0, 0, 0, .2)); }
+.dp-demo[data-demo] .d b::after { background: var(--dot-d, rgba(0, 0, 0, .2)); }
+.dp-demo[data-demo] .cap b::after { width: 100%; height: 100%; background: transparent; box-shadow: inset 0 0 0 4px var(--dot-l, rgba(0, 0, 0, .2)); }
+.dp-demo[data-demo] .d.cap b::after { box-shadow: inset 0 0 0 4px var(--dot-d, rgba(0, 0, 0, .2)); }
 .dp-demo[data-demo="big"] :not(.cap) > b::after { width: 46%; height: 46%; }
-.dp-demo[data-demo="classic"] b::after { width: 33%; height: 33%; background: rgba(0, 0, 0, .14); box-shadow: none; }
-.dp-demo[data-demo="classic"] .cap b::after { width: 100%; height: 100%; background: transparent; box-shadow: inset 0 0 0 4px rgba(0, 0, 0, .14); }
+.dp-demo[data-demo="ring"] :not(.cap) > b::after { width: 42%; height: 42%; background: transparent; box-shadow: inset 0 0 0 3px var(--dot-l, rgba(0, 0, 0, .2)); }
+.dp-demo[data-demo="ring"] .d:not(.cap) > b::after { background: transparent; box-shadow: inset 0 0 0 3px var(--dot-d, rgba(0, 0, 0, .2)); }
+.dp-demo[data-demo="glow"] b::after, .dp-demo[data-demo="glow"] .d b::after { background: var(--dot-acc, rgba(129, 182, 76, .65)); box-shadow: 0 0 6px var(--dot-acc, rgba(129, 182, 76, .65)); }
+.dp-demo[data-demo="glow"] .cap b::after, .dp-demo[data-demo="glow"] .d.cap b::after { background: transparent; box-shadow: inset 0 0 0 4px var(--dot-acc, rgba(129, 182, 76, .65)); }
+.dp-demo[data-demo="classic"] b::after, .dp-demo[data-demo="classic"] .d b::after { background: rgba(0, 0, 0, .14); }
+.dp-demo[data-demo="classic"] .cap b::after, .dp-demo[data-demo="classic"] .d.cap b::after { background: transparent; box-shadow: inset 0 0 0 4px rgba(0, 0, 0, .14); }
 
 /* ───────── the board's frame and glow (the same look as the Bale pictures) ───────── */
 .board-wrap > .cb, .ed-board .cb { border-radius: 4px; box-shadow: 0 0 0 4px var(--frame, #3b4a2c), 0 10px 30px rgba(0, 0, 0, .45); }
 @keyframes boardglow { 0%, 100% { box-shadow: 0 0 0 4px var(--frame, #3b4a2c), 0 0 16px 3px var(--accent-b, #81b64c); }
   50% { box-shadow: 0 0 0 4px var(--frame, #3b4a2c), 0 0 34px 9px var(--accent-b, #81b64c); } }
 
-/* ───────── piece animations: slide + bounce, lift when picked, pop in, shrink away when taken, a king in check shakes,
-   and glowing designs breathe ───────── */
-/* A board piece is positioned with `transform`, so it is never scaled itself (that would throw it off its square):
-   its picture is drawn by ::before, which does the moving/scaling. The piece's own layer only animates the glow.
-   --pcidle = the design's glow/colour animation (on the piece) · --pcmotion = its float/breathe (on the picture) */
+/* ───────── piece animations, like chess.com — Settings → Piece animation: natural (default) · arcade · fast · slow · none.
+   A board piece is positioned with `transform` (that's the glide), so its picture (::before) does the lifting/scaling.
+   --pcidle = the design's glow/colour animation (on the piece) · --pcmotion = its float/breathe (on the picture) ───────── */
 .cb .cb-pc .pc { background-size: 0 0; animation: var(--pcidle, pcnone 1s); }
 .cb .cb-pc .pc::before { content: ""; position: absolute; inset: 0; background-image: inherit; background-size: 100% 100%;
-  background-repeat: no-repeat; animation: var(--pcmotion, pcnone 1s); }
-.cb .cb-pc .pc.anim::before { animation: var(--pcmotion, pcnone 1s), pcmove .26s ease-out; }
+  background-repeat: no-repeat; animation: var(--pcmotion, pcnone 1s); transition: scale .14s ease-out, filter .14s; }
+/* natural: a smooth glide — the piece lifts with a soft shadow while it travels and settles when it lands */
+.pc.anim { transition: transform .24s cubic-bezier(.22, .61, .36, 1); }
+.cb .cb-pc .pc.anim::before { animation: var(--pcmotion, pcnone 1s), pcglide .24s ease-out; }
+.cb .cb-pc .pc.lift::before { scale: 1.08; filter: drop-shadow(0 .45cqw .4cqw rgba(0, 0, 0, .35)); }
 .cb .cb-pc .pc.lift { z-index: 2; }
-.cb .cb-pc .pc.lift::before { scale: 1.1; animation: var(--pcmotion, pcnone 1s), pclift .6s ease-in-out infinite alternate; }
-.cb .cb-pc .pc.dragging::before { scale: 1.2; animation: var(--pcmotion, pcnone 1s); }
-.cb .cb-pc .pc.pop::before { animation: var(--pcmotion, pcnone 1s), pcin .34s cubic-bezier(.2, .9, .3, 1.4); }
-.cb .cb-pc .pc.shake::before { animation: var(--pcmotion, pcnone 1s), pcshake .6s ease-in-out; }
-.cb .cb-pc .pc.gone::before { animation: pcgone .25s ease-in forwards !important; }
-.th-prev .pc { animation: var(--pcidle, pcnone 1s), var(--pcmotion, pcnone 1s); }
-@keyframes pcmove { 0% { scale: 1; } 45% { scale: 1.17; } 80% { scale: .95; } 100% { scale: 1; } }
+.cb .cb-pc .pc.dragging::before { scale: 1.2; filter: drop-shadow(0 1.1cqw .9cqw rgba(0, 0, 0, .42)); transition: none; }
+.cb .cb-pc .pc.pop::before { animation: var(--pcmotion, pcnone 1s), pcin .3s cubic-bezier(.2, .9, .3, 1.3); }
+.cb .cb-pc .pc.shake::before { animation: var(--pcmotion, pcnone 1s), pcshake .55s ease-in-out; }
+.cb .cb-pc .pc.gone { transition: opacity .2s; }
+.cb .cb-pc .pc.gone::before { animation: pcfade .2s ease-in forwards !important; }
+@keyframes pcglide { 0% { scale: 1; } 35% { scale: 1.13; filter: drop-shadow(0 1cqw .9cqw rgba(0, 0, 0, .35)); } 85% { scale: .98; } 100% { scale: 1; } }
+@keyframes pcfade { to { scale: .8; opacity: 0; } }
+/* arcade: the piece jumps along an arc and squashes as it lands; a taken piece is knocked flying */
+html[data-anim="arcade"] .pc.anim { transition: transform .36s cubic-bezier(.3, .7, .4, 1); }
+html[data-anim="arcade"] .cb .cb-pc .pc.anim::before { animation: var(--pcmotion, pcnone 1s), pcarc .36s ease-out; }
+html[data-anim="arcade"] .cb .cb-pc .pc.lift::before { animation: var(--pcmotion, pcnone 1s), pclift .55s ease-in-out infinite alternate; }
+html[data-anim="arcade"] .cb .cb-pc .pc.gone::before { animation: pcgone .32s ease-in forwards !important; }
+@keyframes pcarc { 0% { translate: 0 0; scale: 1; } 45% { translate: 0 -45%; scale: 1.2; filter: drop-shadow(0 2cqw 1.2cqw rgba(0, 0, 0, .3)); }
+  78% { translate: 0 0; scale: 1.12 .86; } 90% { scale: .96 1.05; } 100% { translate: 0 0; scale: 1; } }
+/* fast · slow · none */
+html[data-anim="fast"] .pc.anim { transition: transform .12s ease-out; }
+html[data-anim="fast"] .cb .cb-pc .pc.anim::before { animation: var(--pcmotion, pcnone 1s); }
+html[data-anim="slow"] .pc.anim { transition: transform .45s cubic-bezier(.22, .61, .36, 1); }
+html[data-anim="slow"] .cb .cb-pc .pc.anim::before { animation: var(--pcmotion, pcnone 1s), pcglide .45s ease-out; }
+html[data-anim="none"] .pc.anim { transition: none; }
+html[data-anim="none"] .cb .cb-pc .pc.lift::before, html[data-anim="none"] .cb .cb-pc .pc.dragging::before { scale: 1; filter: none; }
 @keyframes pclift { from { translate: 0 0; } to { translate: 0 -7%; } }
 @keyframes pcin { 0% { scale: .2; opacity: 0; } 70% { scale: 1.16; opacity: 1; } 100% { scale: 1; } }
 @keyframes pcshake { 0%, 100% { translate: 0 0; } 15% { translate: -9% 0; } 30% { translate: 9% 0; } 45% { translate: -6% 0; } 60% { translate: 6% 0; } 75% { translate: -3% 0; } }
-@keyframes pcgone { to { scale: .2; rotate: 40deg; opacity: 0; } }
+@keyframes pcgone { to { scale: 1.4; rotate: 50deg; translate: 30% -40%; opacity: 0; } }
 @keyframes pcglow { 0%, 100% { filter: drop-shadow(0 0 2px var(--pg, #fff)) drop-shadow(0 0 4px var(--pg, #fff)); }
   50% { filter: drop-shadow(0 0 4px var(--pg, #fff)) drop-shadow(0 0 var(--pgs, 12px) var(--pg, #fff)); } }
 @keyframes pcfloat { 0%, 100% { translate: 0 0; } 50% { translate: 0 -5%; } }
 @keyframes pcbreathe { 0%, 100% { scale: 1; } 50% { scale: 1.07; } }
+.th-prev .pc { animation: var(--pcidle, pcnone 1s), var(--pcmotion, pcnone 1s); }
 /* the idle animations don't run in lock-step */
 .cb .cb-pc .pc:nth-child(3n), .cb .cb-pc .pc:nth-child(3n)::before { animation-delay: -.9s, 0s; }
 .cb .cb-pc .pc:nth-child(3n+1), .cb .cb-pc .pc:nth-child(3n+1)::before { animation-delay: -1.8s, 0s; }
-/* Settings → Animations & effects off */
-html.calm .cb .cb-pc .pc, html.calm .cb .cb-pc .pc:not(.gone)::before, html.calm .board-wrap > .cb { animation: none !important; }
+/* Settings → Animations & effects off: no glow pulses / floating (moves still glide) */
+html.calm .cb .cb-pc .pc, html.calm .board-wrap > .cb, html.calm .th-prev .pc { animation: none !important; }
 @media (prefers-reduced-motion: reduce) { .cb .cb-pc .pc, .cb .cb-pc .pc:not(.gone)::before, .board-wrap > .cb { animation: none !important; } }
+/* Settings: the piece-animation demo */
+.anim-demo { width: 120px; height: 120px; margin: 6px 0 10px; border-radius: 6px; overflow: hidden; }
+.anim-demo .cb-sq { border-radius: 0; }
+.anim-demo .pc { width: 25%; height: 25%; }
+.anim-pick { margin-bottom: 4px; }
 
 /* ───────── board layers for game modes ───────── */
 .hl.zone.hill { box-shadow: inset 0 0 0 .5cqw rgba(255, 215, 0, .85); background: rgba(255, 215, 0, .16); }

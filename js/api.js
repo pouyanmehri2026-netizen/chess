@@ -1,7 +1,7 @@
 // Talks to the Chess bot's game server. The website itself can be hosted anywhere (GitHub Pages);
 // the server address comes from the link (?s=…), the last one that worked, or server.json in the repo.
-import { CONFIG } from "../config.js?v=73cda5a6b6";
-import { store } from "./util.js?v=73cda5a6b6";
+import { CONFIG } from "../config.js?v=ffb4d75985";
+import { store } from "./util.js?v=ffb4d75985";
 
 let base = null;
 let connecting = null;

@@ -1,14 +1,18 @@
 // Live things on every page: the owner's event ("admin abuse") banner with its countdown and effects
 // (confetti, snow, fireworks…), the Board Designer's newest boards, and the move-dot style.
-import * as api from "./api.js?v=73cda5a6b6";
-import { t, fa } from "./i18n.js?v=73cda5a6b6";
-import "./i18n3.js?v=73cda5a6b6";
-import { store, esc, sleep } from "./util.js?v=73cda5a6b6";
+import * as api from "./api.js?v=ffb4d75985";
+import { t, fa } from "./i18n.js?v=ffb4d75985";
+import "./i18n3.js?v=ffb4d75985";
+import { store, esc, sleep } from "./util.js?v=ffb4d75985";
 
 // ───────── move dots (always visible on every board) ─────────
 export const DOTS = ["bold", "ring", "glow", "big", "classic"];
 export function applyDots(k) { document.documentElement.dataset.dots = DOTS.includes(k) ? k : (store.get("dots") || "bold"); }
 export function setDots(k) { store.set("dots", k); applyDots(k); }
+// piece animation style, like chess.com (board.js times the glide by it)
+export const ANIMS = ["natural", "arcade", "fast", "slow", "none"];
+export function applyAnim(k) { document.documentElement.dataset.anim = ANIMS.includes(k) ? k : (store.get("anim") || "natural"); }
+export function setAnim(k) { store.set("anim", k); applyAnim(k); }
 
 // ───────── boards made in the Board Designer (live from the server) ─────────
 let liveThemes = null;
@@ -42,6 +46,7 @@ export function startLive() {
   if (started) return;
   started = true;
   applyDots();
+  applyAnim();
   calm();
   loop();
   setInterval(tick, 1000);
@@ -155,4 +160,4 @@ function startFx() {
   }, kind === "snow" ? 260 : 420);
 }
 
-export const V = "73cda5a6b6";
+export const V = "ffb4d75985";

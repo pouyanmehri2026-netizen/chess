@@ -42,6 +42,12 @@ export function parseFen(fen) {
 
 function tr(x, y) { return `translate(${x * 100}%,${y * 100}%)`; }
 
+// piece animation style (Settings, like chess.com) and how long a move's glide takes (the looks: css/v3.css)
+const ANIM_MS = { none: 0, fast: 130, natural: 250, arcade: 370, slow: 460 };
+const animStyle = () => (ANIM_MS[document.documentElement.dataset.anim] !== undefined ? document.documentElement.dataset.anim : "natural");
+// move dots are tinted for the square they're on (light/dark), so they show on every board design
+const shade = (sq) => ((sq.charCodeAt(0) - 97 + sq.charCodeAt(1) - 49) % 2 ? " on-l" : " on-d");
+
 export class Board {
   constructor(root, opts = {}) {
     this.root = root;
@@ -99,6 +105,9 @@ export class Board {
   }
 
   setPosition(fen, animate) {
+    const style = animStyle();
+    if (style === "none") animate = false;
+    const ms = ANIM_MS[style];
     const next = parseFen(fen);
     const prev = this.pos;
     const keep = new Map();
@@ -137,18 +146,18 @@ export class Board {
       if (!f) continue;
       if (animate) {
         f.el.classList.remove("lift", "anim", "pop");
-        f.el.classList.add("gone");  // a taken piece spins and shrinks away
-        setTimeout(() => f.el.remove(), 260);
+        f.el.classList.add("gone");  // a taken piece fades away (arcade: knocked flying)
+        setTimeout(() => f.el.remove(), style === "arcade" ? 340 : 230);
       } else f.el.remove();
     }
     for (const [el, sq] of moved) {
       el.classList.remove("dragging");
       const t = tr(...sqXY(sq, this.orient));
       if (animate) {
-        el.classList.add("anim");  // slides over, a little hop and a bounce when it lands
+        el.classList.add("anim");  // glides over (lifted, with a shadow) and settles when it lands
         el.style.transform = t;
         clearTimeout(el._t);
-        el._t = setTimeout(() => el.classList.remove("anim"), 290);
+        el._t = setTimeout(() => el.classList.remove("anim"), ms + 40);
       } else {
         el.classList.remove("anim");
         el.style.transform = t;
@@ -290,7 +299,7 @@ export class Board {
     if (this.drop) {
       this.lDe.innerHTML = this.drop.dests.map((to) => {
         const [x, y] = sqXY(to, this.orient);
-        return `<div class="dest drop" style="transform:${tr(x, y)}"></div>`;
+        return `<div class="dest drop${shade(to)}" style="transform:${tr(x, y)}"></div>`;
       }).join("");
       return;
     }
@@ -300,7 +309,7 @@ export class Board {
     this.lDe.innerHTML = list.map((to) => {
       const [x, y] = sqXY(to, o);
       const cap = this.pos.has(to) || (this.pos.get(this.sel) || "")[1] === "P" && to[0] !== this.sel[0];
-      return `<div class="dest${cap ? " cap" : ""}${pre ? " pre" : ""}" style="transform:${tr(x, y)}"></div>`;
+      return `<div class="dest${cap ? " cap" : ""}${pre ? " pre" : ""}${shade(to)}" style="transform:${tr(x, y)}"></div>`;
     }).join("");
   }
 
@@ -453,7 +462,7 @@ export class Board {
     if (!d.el) return;
     d.el.classList.add("anim");
     d.el.style.transform = tr(...sqXY(d.from, this.orient));
-    setTimeout(() => d.el.classList.remove("anim"), 290);
+    setTimeout(() => d.el.classList.remove("anim"), ANIM_MS[animStyle()] + 40);
   }
 
   setPremove(from, to) {

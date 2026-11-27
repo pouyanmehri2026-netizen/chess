@@ -1,9 +1,9 @@
 // Log in / sign up (e-mail code, password, "log in with Bale", forgot password) and the Settings page
 // (board design, title & tag, showcase, bio, flag, account security, linking Bale).
-import * as api from "./api.js?v=73cda5a6b6";
-import { t, fa } from "./i18n.js?v=73cda5a6b6";
-import { store, esc, toast, sleep, titleHtml, tagHtml, nameHtml, confirmBox } from "./util.js?v=73cda5a6b6";
-import { loadMe, setSession, logout, applyTheme, current } from "./session.js?v=73cda5a6b6";
+import * as api from "./api.js?v=ffb4d75985";
+import { t, fa } from "./i18n.js?v=ffb4d75985";
+import { store, esc, toast, sleep, titleHtml, tagHtml, nameHtml, confirmBox } from "./util.js?v=ffb4d75985";
+import { loadMe, setSession, logout, applyTheme, current } from "./session.js?v=ffb4d75985";
 
 const L = () => (fa() ? "fa" : "en");
 const FLAGS = ["", "🇮🇷", "🇦🇫", "🇹🇯", "🇹🇷", "🇮🇶", "🇦🇪", "🇸🇦", "🇦🇿", "🇦🇲", "🇬🇪", "🇷🇺", "🇩🇪", "🇬🇧", "🇫🇷", "🇮🇹",
@@ -13,11 +13,11 @@ let themesCache = null;
 export async function loadThemes(force = false) {
   if (themesCache && !force) return themesCache;
   try {  // live from the server: includes the Board Designer's newest boards
-    const { loadLiveThemes } = await import("./live.js?v=73cda5a6b6");
+    const { loadLiveThemes } = await import("./live.js?v=ffb4d75985");
     const live = await loadLiveThemes(force);
     if (live && live.length) { themesCache = live; return themesCache; }
   } catch { /* offline */ }
-  try { themesCache = await (await fetch(`data/themes.json?v=73cda5a6b6`)).json(); } catch { themesCache = []; }
+  try { themesCache = await (await fetch(`data/themes.json?v=ffb4d75985`)).json(); } catch { themesCache = []; }
   return themesCache;
 }
 
@@ -259,11 +259,11 @@ export async function renderSettings(view, nav, params) {
           .map(([k, l]) => `<button class="dp${dots === k ? " on" : ""}" data-dots="${k}"><span class="dp-demo" data-demo="${k}"><i class="l"><b></b></i><i class="d"><b></b></i><i class="d cap"><b></b><span class="pc" data-c="bN"></span></i><i class="l cap"><b></b><span class="pc" data-c="bP"></span></i></span><span>${l}</span></button>`).join("")}</div>
         <label class="ck"><input type="checkbox" class="fx-on" ${store.get("fx") !== false ? "checked" : ""}> ${t("fx_toggle")}</label></div>`;
     body.querySelectorAll("[data-dots]").forEach((b) => b.onclick = async () => {
-      const { setDots } = await import("./live.js?v=73cda5a6b6");
+      const { setDots } = await import("./live.js?v=ffb4d75985");
       setDots(b.dataset.dots);
       body.querySelectorAll("[data-dots]").forEach((x) => x.classList.toggle("on", x === b));
     });
-    body.querySelector(".fx-on").onchange = async (e) => { const { setFx } = await import("./live.js?v=73cda5a6b6"); setFx(e.target.checked); };
+    body.querySelector(".fx-on").onchange = async (e) => { const { setFx } = await import("./live.js?v=ffb4d75985"); setFx(e.target.checked); };
     body.querySelectorAll(".th-card").forEach((b) => b.onclick = async () => {
       const k = b.dataset.k;
       const th = themes.find((x) => x.key === k);
@@ -317,7 +317,7 @@ export async function renderSettings(view, nav, params) {
     body.querySelectorAll("[data-fl]").forEach((b) => b.onclick = () => { flag = b.dataset.fl; body.querySelectorAll("[data-fl]").forEach((x) => x.classList.toggle("on", x === b)); });
     body.querySelector(".save-prof").onclick = async () => { if (await save({ bio: body.querySelector(".bio-in").value, flag })) { me.flag = flag; prev(); } };
     // showcase: the player's achievements
-    import("./profile.js?v=73cda5a6b6").then(async ({ achList }) => {
+    import("./profile.js?v=ffb4d75985").then(async ({ achList }) => {
       const all = await achList();
       const have = all.list.filter((x) => (me.ach_codes || []).includes(x.code));
       const grid = body.querySelector(".sc-grid");
@@ -402,4 +402,4 @@ const COLORS = { SGM: "#f5b700", GM: "#c0392b", IM: "#d35400", WGM: "#c2185b", F
 export const titleColor = (c) => COLORS[c] || "#7c2929";
 export function bestTitle(codes) { return PRESTIGE.find((c) => (codes || []).includes(c)) || null; }
 export { current };
-export const V = "73cda5a6b6";  // the site version this file belongs to (main.js reloads the page after an update)
+export const V = "ffb4d75985";  // the site version this file belongs to (main.js reloads the page after an update)
